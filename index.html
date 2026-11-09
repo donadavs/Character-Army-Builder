@@ -132,6 +132,7 @@ input[type=text], input[type=number], select {
 .tally td:first-child { font-weight: 600; }
 .tally td:not(:first-child) { font-family: var(--mono); }
 .tally tr.lead td { color: var(--brass); }
+.bottag { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--pc); color: var(--text-soft); padding: 0 6px; border-radius: 999px; }
 canvas.fx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }
 @media (prefers-reduced-motion: reduce) { .lottimer.urgent .secs { animation: none; } }
 .online h2 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -442,7 +443,8 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
 
   function startGame() {
     const st = S.setup;
-    const names = st.names.map(n => n.trim()).filter(Boolean);
+    const humans = st.names.map(n => n.trim()).filter(Boolean);
+    const names = humans.concat(BOT_NAMES.slice(0, botCount(humans.length)));
     let pool = DATA.characters;
     if (st.cats.length) pool = pool.filter(c => st.cats.includes(c.filter));
     pool = pool.filter(c => !c.fame_tier || c.fame_tier <= (st.fame || 3));
@@ -453,7 +455,8 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
       players: names.map((n, i) => ({ name: n, color: PCOLORS[i], money: Number(st.budget), team: [], wins: S.players?.[i]?.name === n ? S.players[i].wins : 0 })),
       lots, lotIndex: 0, unsold: [], bid: null, log: S.log || []
     };
-    S.live = false; S.ready = S.players.map(() => false); S.endsAt = null;
+    S.players.forEach((p, i) => { p.bot = i >= humans.length; });
+    S.live = false; S.ready = S.players.map(p => !!p.bot); S.endsAt = null; brain = { key: null };
     undoStack = [];
   }
 
@@ -578,7 +581,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
   function setupView() {
     const st = S.setup;
     const cats = categories();
-    const n = st.names.filter(x => x.trim()).length;
+    const nh = st.names.filter(x => x.trim()).length, nb = botCount(nh), n = nh + nb;
     const pool = DATA.characters.filter(c => (!st.cats.length || st.cats.includes(c.filter)) && (!c.fame_tier || c.fame_tier <= (st.fame || 3))).length;
     const need = n * st.poolPer;
     const ok = n >= 2 && pool >= 1 && st.budget >= 1;
@@ -596,6 +599,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
         </div>
         <div class="field"><label for="poolPer">Characters in the pool per player</label><input type="number" id="poolPer" min="1" max="12" value="${st.poolPer}"></div>
         ${cats.length > 1 ? `<div class="field"><label>Draw only from (leave all off for everything)</label><div class="chips">${cats.map(c => `<button type="button" class="btn small" data-cat="${esc(c)}" aria-pressed="${st.cats.includes(c)}" style="${st.cats.includes(c) ? "background:var(--brass);color:#231a06;border-color:var(--brass)" : ""}">${esc(c)}</button>`).join("")}</div></div>` : ""}
+        <div class="field"><label>Bots ${4 - nh > 0 ? `(up to ${4 - nh})` : "(no seats left)"}</label><div class="chips">${[0, 1, 2, 3].map(v => `<button type="button" class="btn small" data-bots="${v}" aria-pressed="${(st.bots || 0) === v}" ${v > 4 - nh ? "disabled" : ""} style="${(st.bots || 0) === v ? "background:var(--brass);color:#231a06;border-color:var(--brass)" : ""}">${v ? v + " bot" + (v > 1 ? "s" : "") : "No bots"}</button>`).join("")}</div>${nb ? `<p class="hint">Bots fill the empty seats: ${BOT_NAMES.slice(0, nb).join(", ")}. Each one secretly decides how much it wants every character.</p>` : ""}</div>
         <div class="field"><label>How famous?</label><div class="chips">${[[1, "Household names"], [2, "Well known"], [3, "Deep cuts too"]].map(([v, l]) => `<button type="button" class="btn small" data-fame="${v}" aria-pressed="${(st.fame || 3) === v}" style="${(st.fame || 3) === v ? "background:var(--brass);color:#231a06;border-color:var(--brass)" : ""}">${l}</button>`).join("")}</div></div>
         <p class="hint">${n} bidder${n === 1 ? "" : "s"}, ${Math.min(need, pool)} characters go under the hammer from a pool of ${pool}.${!ok ? ` <strong style="color:var(--danger)">${n < 2 ? "Name at least two players." : pool < 1 ? "No characters match those filters." : "Budget must be at least $1."}</strong>` : ""}</p>
         <div class="row"><button class="btn primary" data-act="start" ${ok ? "" : "disabled"}>Open the auction</button></div>
@@ -639,9 +643,9 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
       const opts = [1, 5, 10].map(inc => ({ label: `+${inc}`, amt: cur + inc }));
       opts.push({ label: "All in", amt: mx });
       return `<div class="paddle ${lead ? "leading" : ""} ${full ? "out" : ""}" style="--pc:${p.color}">
-        <div class="ph"><span class="name"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span><span class="money">$${p.money}</span></div>
+        <div class="ph"><span class="name"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}${p.bot ? `<span class="bottag">bot</span>` : ""}</span><span class="money">$${p.money}</span></div>
         <div class="stat">${full ? "Out of money" : `${p.team.length} on the team · key ${i + 1}`}</div>
-        <div class="bids">${opts.map(o => `<button data-bid="${i}" data-amt="${o.amt}" ${S.live === false || full || lead || flash || o.amt > mx || o.amt <= cur ? "disabled" : ""} aria-label="${esc(p.name)} bids $${o.amt}">${o.label === "All in" ? "All" : o.label}</button>`).join("")}</div>
+        <div class="bids">${opts.map(o => `<button data-bid="${i}" data-amt="${o.amt}" ${S.live === false || p.bot || full || lead || flash || o.amt > mx || o.amt <= cur ? "disabled" : ""} aria-label="${esc(p.name)} bids $${o.amt}">${o.label === "All in" ? "All" : o.label}</button>`).join("")}</div>
       </div>`;
     }).join("");
     return header(`Lot ${S.lotIndex + 1} of ${S.lots.length}`) + `
@@ -725,10 +729,11 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
       const pi = Number(d.bid), amt = Number(d.amt), p = S.players?.[pi];
       if (S.phase !== "auction" || flash || !p || auctionOver()) return;
       const cur = S.bid ? S.bid.amount : 0;
-      if (S.bid?.bidder === pi || !(amt > cur) || amt > maxBid(p)) return; // stale or invalid bid
+      if (p.bot || S.bid?.bidder === pi || !(amt > cur) || amt > maxBid(p)) return; // stale or invalid bid
       return placeBid(pi, amt);
     }
     if (d.ready != null) { setReady(d.ready); return render(); }
+    if (d.bots != null) { S.setup.bots = Number(d.bots) || 0; return render(); }
     if (d.voteready != null) { setVoteReady(d.voteready); return render(); }
     if (d.vote != null) { castVote(Number(d.vote), Number(d.first), Number(d.second)); return render(); }
     if (d.cat) { const c = d.cat, cs = S.setup.cats; S.setup.cats = cs.includes(c) ? cs.filter(x => x !== c) : cs.concat(c); return render(); }
@@ -773,7 +778,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     const k = Number(e.key);
     if (k >= 1 && k <= S.players.length) {
       const p = S.players[k - 1], cur = S.bid ? S.bid.amount : 0;
-      if (S.bid?.bidder !== k - 1 && cur + 1 <= maxBid(p)) placeBid(k - 1, cur + 1);
+      if (!p.bot && S.bid?.bidder !== k - 1 && cur + 1 <= maxBid(p)) placeBid(k - 1, cur + 1);
     }
   });
 
@@ -857,14 +862,72 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     }
   }
 
+  // ---------- bots ----------
+  const BOT_NAMES = ["Robo Rita", "Gavel-Tron", "Sir Clanksalot"];
+  const botCount = humans => Math.max(0, Math.min(Number(S.setup?.bots) || 0, 4 - humans));
+  // How much a bot cares about a character: $2 to $12, usually around $4.
+  const botValue = () => 2 + Math.round(10 * Math.pow(Math.random(), 2.2));
+  let brain = { key: null };
+  function botTick() {
+    if (NET.mode === "guest" || S.phase !== "auction" || S.live === false || flash || !S.endsAt || auctionOver()) return;
+    if (!S.players.some(p => p.bot)) return;
+    const now = Date.now(), key = S.lotIndex + ":" + currentLot();
+    if (brain.key !== key) {
+      brain = { key, bots: {}, lastBid: "none", heat: 0 };
+      S.players.forEach((p, i) => { if (p.bot) brain.bots[i] = { value: botValue(), bumps: 0, next: now + 1500 + Math.random() * 5000 }; });
+    }
+    const left = S.endsAt - now, cur = S.bid ? S.bid.amount : 0;
+    const bidKey = S.bid ? S.bid.bidder + ":" + cur : "none";
+    if (brain.lastBid !== bidKey) {
+      brain.lastBid = bidKey;
+      if (S.bid) brain.heat++;
+      Object.keys(brain.bots).forEach(k => {
+        const i = Number(k), b = brain.bots[k];
+        if (S.bid && S.bid.bidder === i) return;
+        // Read the room: when others push the price past what this bot cares about, it sometimes gets swept up.
+        if (S.bid && cur >= b.value && b.bumps < 2 && Math.random() < Math.min(0.4, 0.12 * brain.heat)) {
+          b.value = cur + 1 + Math.floor(Math.random() * 3); b.bumps++;
+        }
+        b.next = now + 800 + Math.random() * 3500;
+      });
+    }
+    for (const k of Object.keys(brain.bots)) {
+      const pi = Number(k), b = brain.bots[k], p = S.players[pi];
+      if (now < b.next) continue;
+      b.next = now + 1000 + Math.random() * 3000;
+      if (S.bid?.bidder === pi) continue;
+      const limit = Math.min(b.value, maxBid(p));
+      if (cur + 1 > limit) continue;
+      if (left > 6000 && Math.random() < 0.35) continue; // early on, sometimes hold back
+      const amt = cur + 1 < limit && Math.random() < 0.25 ? cur + 2 : cur + 1;
+      placeBid(pi, amt);
+      return;
+    }
+  }
+  setInterval(botTick, 250);
+  function botBallots() {
+    const v = S.vote; if (!v || v.stage !== "voting") return;
+    S.players.forEach((p, i) => {
+      if (!p.bot || v.ballots[i]) return;
+      // Bots lean towards bigger teams but can pick anyone, themselves included.
+      const w = S.players.map(q => 1 + q.team.length), pickW = (excl) => {
+        const tot = w.reduce((a, x, j) => a + (j === excl ? 0 : x), 0); let r = Math.random() * tot;
+        for (let j = 0; j < w.length; j++) { if (j === excl) continue; if ((r -= w[j]) < 0) return j; }
+        return w.findIndex((x, j) => j !== excl);
+      };
+      const first = pickW(-1), second = S.players.length > 1 ? pickW(first) : null;
+      castVote(i, first, second);
+    });
+  }
+
   // ---------- challenge voting (online) ----------
   let myPick = { first: null, second: null };
-  const newVote = () => ({ stage: "argue", ready: S.players.map(() => false), ballots: S.players.map(() => null), result: null });
+  const newVote = () => ({ stage: "argue", ready: S.players.map(p => !!p.bot), ballots: S.players.map(() => null), result: null });
   function setVoteReady(who) {
     const v = S.vote; if (!v || v.stage !== "argue") return;
     if (who === "all") v.ready = v.ready.map(() => true);
     else { const i = Number(who); if (!S.players[i]) return; v.ready[i] = !v.ready[i]; }
-    if (v.ready.every(Boolean)) v.stage = "voting";
+    if (v.ready.every(Boolean)) { v.stage = "voting"; botBallots(); }
   }
   function castVote(i, first, second) {
     const v = S.vote, n = S.players.length; if (!v || v.stage !== "voting" || !S.players[i]) return;

@@ -457,8 +457,8 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     undoStack = [];
   }
 
-  const slotsLeft = p => S.setup.teamSize - p.team.length;
-  const maxBid = p => slotsLeft(p) <= 0 ? 0 : p.money - (slotsLeft(p) - 1); // keep $1 for every other empty seat
+  const slotsLeft = p => p.money > 0 ? 1 : 0; // no team size cap: you can keep buying while you have money
+  const maxBid = p => Math.max(0, p.money); // keep $1 for every other empty seat
   const currentLot = () => S.lots[S.lotIndex];
   const auctionOver = () => S.players.every(p => slotsLeft(p) <= 0) || S.lotIndex >= S.lots.length;
 
@@ -553,7 +553,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
         ${p.wins ? `<div class="wins">${p.wins} challenge win${p.wins > 1 ? "s" : ""}</div>` : ""}
         <ul>
           ${p.team.map(m => { const c = charById(m.id); return `<li class="member">${art(c)}<div class="mi"><div class="mn">${esc(c.name)}</div><div class="ms">${esc((c.talents || []).slice(0, 3).join(", "))}</div></div>${showPaid ? `<span class="paid money">$${m.paid}</span>` : ""}</li>`; }).join("")}
-          ${Array.from({ length: Math.max(0, slotsLeft(p)) }, () => `<li class="slot">Open seat</li>`).join("")}
+          ${p.team.length ? "" : `<li class="slot">Nobody yet</li>`}
         </ul>
       </div>`).join("")}</section>`;
   }
@@ -581,7 +581,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     const n = st.names.filter(x => x.trim()).length;
     const pool = DATA.characters.filter(c => (!st.cats.length || st.cats.includes(c.filter)) && (!c.fame_tier || c.fame_tier <= (st.fame || 3))).length;
     const need = n * st.poolPer;
-    const ok = n >= 2 && Math.min(need, pool) >= n * st.teamSize && st.budget >= st.teamSize;
+    const ok = n >= 2 && pool >= 1 && st.budget >= 1;
     return header("Set the table") + `
     <div class="setup">
       ${NET.panel()}
@@ -593,22 +593,21 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
         </div>
         <div class="grid2">
           <div class="field"><label for="budget">Budget per player ($)</label><input type="number" id="budget" min="5" max="10000" value="${st.budget}"></div>
-          <div class="field"><label for="teamSize">Team size</label><input type="number" id="teamSize" min="1" max="10" value="${st.teamSize}"></div>
         </div>
         <div class="field"><label for="poolPer">Characters in the pool per player</label><input type="number" id="poolPer" min="1" max="12" value="${st.poolPer}"></div>
         ${cats.length > 1 ? `<div class="field"><label>Draw only from (leave all off for everything)</label><div class="chips">${cats.map(c => `<button type="button" class="btn small" data-cat="${esc(c)}" aria-pressed="${st.cats.includes(c)}" style="${st.cats.includes(c) ? "background:var(--brass);color:#231a06;border-color:var(--brass)" : ""}">${esc(c)}</button>`).join("")}</div></div>` : ""}
         <div class="field"><label>How famous?</label><div class="chips">${[[1, "Household names"], [2, "Well known"], [3, "Deep cuts too"]].map(([v, l]) => `<button type="button" class="btn small" data-fame="${v}" aria-pressed="${(st.fame || 3) === v}" style="${(st.fame || 3) === v ? "background:var(--brass);color:#231a06;border-color:var(--brass)" : ""}">${l}</button>`).join("")}</div></div>
-        <p class="hint">${n} bidder${n === 1 ? "" : "s"}, ${Math.min(need, pool)} characters go under the hammer from a pool of ${pool}.${!ok ? ` <strong style="color:var(--danger)">${n < 2 ? "Name at least two players." : Math.min(need, pool) < n * st.teamSize ? "The pool needs at least as many characters per player as the team size." : "Budget must be at least the team size."}</strong>` : ""}</p>
+        <p class="hint">${n} bidder${n === 1 ? "" : "s"}, ${Math.min(need, pool)} characters go under the hammer from a pool of ${pool}.${!ok ? ` <strong style="color:var(--danger)">${n < 2 ? "Name at least two players." : pool < 1 ? "No characters match those filters." : "Budget must be at least $1."}</strong>` : ""}</p>
         <div class="row"><button class="btn primary" data-act="start" ${ok ? "" : "disabled"}>Open the auction</button></div>
       </section>
       <section class="panel rules">
         <h2>How it plays</h2>
         <ol>
           <li><strong>One lot at a time.</strong> A random character is revealed and goes up for auction. The pool holds 4 characters per player, so not everyone gets their first pick.</li>
-          <li><strong>Buzz in any time.</strong> No turns. The moment a character appears, anyone can hit their paddle. Every bid beats the last by at least $1; jump bids of $5, $10 or all in are allowed. On a keyboard, keys 1 to 4 buzz in +$1 for players 1 to 4. You always keep $1 for every empty seat on your team.</li>
+          <li><strong>Buzz in any time.</strong> No turns. The moment a character appears, anyone can hit their paddle. Every bid beats the last by at least $1; jump bids of $5, $10 or all in are allowed. On a keyboard, keys 1 to 4 buzz in +$1 for players 1 to 4. There is no team size limit: buy as many characters as your money allows.</li>
           <li><strong>Beat the clock.</strong> Each character gets 20 seconds. A bid in the last 5 seconds puts the clock back to 5. When time runs out the top bidder pays and takes the character; no bids means it passes.</li>
           <li><strong>Playing online?</strong> Everyone sees the same auction on their own screen and bids with their own paddle. The host brings down the gavel and runs the challenge.</li>
-          <li><strong>Face the challenge.</strong> Once teams are full, a random challenge is drawn. Argue your case, then the table picks a winner.</li>
+          <li><strong>Face the challenge.</strong> When the last character is sold, a random challenge is drawn. Argue your case, then the table picks a winner.</li>
         </ol>
         <p class="datanote">Playing with ${DATA.characters.length} characters from the roster and ${window.CHALLENGE_DATA ? `${window.CHALLENGE_DATA.curated.challenges.length} hand-written challenges, ${window.CHALLENGE_DATA.occupations.occupations.length} jobs and a mash-up generator with thousands of combinations` : DATA.challenges.challenges.length + " challenges"}.</p>
       </section>
@@ -617,11 +616,11 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
 
   function auctionView() {
     if (auctionOver() && !flash) {
-      const incomplete = S.players.some(p => slotsLeft(p) > 0);
+      const incomplete = S.unsold.length > 0 && S.players.some(p => p.money > 0);
       return header("Auction closed") + `
         <section class="panel">
-          <h2>${incomplete ? "The lot is empty" : "Every team is full"}</h2>
-          <p class="hint">${incomplete ? `Some seats are still open.${S.unsold.length ? ` ${S.unsold.length} passed character${S.unsold.length > 1 ? "s" : ""} can go back up for auction.` : ""}` : "Time to see what these armies can do."}</p>
+          <h2>${S.players.every(p => p.money <= 0) ? "Everyone is out of money" : "Every character has been auctioned"}</h2>
+          <p class="hint">${incomplete ? `Some characters went unsold.${S.unsold.length ? ` ${S.unsold.length} passed character${S.unsold.length > 1 ? "s" : ""} can go back up for auction.` : ""}` : "Time to see what these armies can do."}</p>
           <div class="row">
             ${incomplete && S.unsold.length ? `<button class="btn" data-act="reauction">Re-auction passed characters</button>` : ""}
             <button class="btn primary" data-act="to-challenge">Draw the challenge</button>
@@ -641,7 +640,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
       opts.push({ label: "All in", amt: mx });
       return `<div class="paddle ${lead ? "leading" : ""} ${full ? "out" : ""}" style="--pc:${p.color}">
         <div class="ph"><span class="name"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span><span class="money">$${p.money}</span></div>
-        <div class="stat">${full ? "Team full" : `${slotsLeft(p)} seat${slotsLeft(p) > 1 ? "s" : ""} open · max bid $${mx} · key ${i + 1}`}</div>
+        <div class="stat">${full ? "Out of money" : `${p.team.length} on the team · key ${i + 1}`}</div>
         <div class="bids">${opts.map(o => `<button data-bid="${i}" data-amt="${o.amt}" ${S.live === false || full || lead || flash || o.amt > mx || o.amt <= cur ? "disabled" : ""} aria-label="${esc(p.name)} bids $${o.amt}">${o.label === "All in" ? "All" : o.label}</button>`).join("")}</div>
       </div>`;
     }).join("");

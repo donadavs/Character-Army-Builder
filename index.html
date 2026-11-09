@@ -104,6 +104,53 @@ input[type=text], input[type=number], select {
 .card .src { font-size: 12px; color: var(--ink-soft); font-style: italic; }
 .card p { margin: 0; font-size: 14px; }
 .card .credit { font-size: 10px; color: var(--ink-soft); opacity: .8; }
+.setup .online { grid-column: 1 / -1; }
+.lottimer { display: flex; align-items: center; gap: 12px; }
+.lottimer .bar { flex: 1; height: 12px; border-radius: 999px; background: rgba(0,0,0,.3); overflow: hidden; border: 1px solid var(--felt-line); }
+.lottimer .bar i { display: block; height: 100%; background: var(--brass); transition: width .2s linear; }
+.lottimer .secs { font-family: var(--mono); font-weight: 600; font-size: 22px; min-width: 3ch; text-align: right; color: var(--brass); }
+.lottimer.waiting .bar i { background: var(--felt-line); }
+.lottimer.waiting .secs { font-size: 13px; color: var(--text-soft); font-family: inherit; }
+.lottimer.urgent .bar i { background: var(--danger); }
+.lottimer.urgent .secs { color: var(--danger); animation: pulse .5s ease-in-out infinite alternate; }
+@keyframes pulse { to { transform: scale(1.15); } }
+.readybox { border-color: var(--brass); }
+.readylist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.readylist li { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.readylist .tag { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-soft); border: 1px solid var(--felt-line); border-radius: 999px; padding: 1px 8px; }
+.readylist li.is-ready .tag { color: #231a06; background: var(--brass); border-color: var(--brass); }
+.btn.big { font-size: 18px; padding: 14px 24px; }
+.stamp { grid-template-rows: auto auto; align-content: center; gap: 22px; }
+.stamp .soldto { font-style: normal; font-weight: 700; font-size: 18px; text-align: center; background: var(--pc); color: #111; padding: 6px 14px; border-radius: 999px; max-width: 90%; animation: pop .4s ease-out; }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.pickrow { display: flex; flex-direction: column; gap: 6px; }
+.btn.pick { border-color: var(--pc); }
+.btn.pick[aria-pressed="true"] { background: var(--pc); color: #111; border-color: var(--pc); }
+.tally { border-collapse: collapse; width: 100%; max-width: 420px; font-size: 14px; }
+.tally th, .tally td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--felt-line); }
+.tally th { font-size: 12px; color: var(--text-soft); font-weight: 600; }
+.tally td:first-child { font-weight: 600; }
+.tally td:not(:first-child) { font-family: var(--mono); }
+.tally tr.lead td { color: var(--brass); }
+canvas.fx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }
+@media (prefers-reduced-motion: reduce) { .lottimer.urgent .secs { animation: none; } }
+.online h2 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.roomcode { font-family: var(--mono); letter-spacing: .12em; background: var(--brass); color: #231a06; padding: 2px 10px; border-radius: 6px; font-size: 20px; }
+.netform { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .netform { grid-template-columns: 1fr; } }
+#netcode { font-family: var(--mono); text-transform: uppercase; letter-spacing: .1em; }
+.sharerow { display: flex; gap: 8px; flex-wrap: wrap; }
+.sharerow input { flex: 1 1 220px; min-width: 0; font-size: 13px; }
+.lobby { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.lobby li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-weight: 600; overflow-wrap: anywhere; }
+.lobby li.waiting { font-weight: 400; color: var(--text-soft); font-size: 13px; }
+.lobby .tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-soft); border: 1px solid var(--felt-line); border-radius: 999px; padding: 1px 8px; }
+.lobby .tag.away, .netbar .away { color: var(--danger); border-color: var(--danger); }
+.neterr { color: var(--danger); font-size: 14px; font-weight: 600; margin: 0; }
+.netbar { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 13px; padding: 8px 12px; border: 1px solid var(--felt-line); border-radius: var(--r); background: rgba(0,0,0,.18); }
+.netbar .hint { flex-basis: 100%; }
+.paddle.mine { order: -1; box-shadow: 0 0 0 2px var(--pc) inset; }
+.paddle.mine .name::after { content: "YOU"; font-size: 10px; letter-spacing: .08em; background: var(--pc); color: #111; padding: 1px 6px; border-radius: 999px; }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .chip { font-size: 11px; font-weight: 600; background: #e3d9c2; color: #3c3a2f; padding: 3px 8px; border-radius: 999px; }
 .card.enter { animation: deal .38s cubic-bezier(.2,.8,.2,1); }
@@ -406,6 +453,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
       players: names.map((n, i) => ({ name: n, color: PCOLORS[i], money: Number(st.budget), team: [], wins: S.players?.[i]?.name === n ? S.players[i].wins : 0 })),
       lots, lotIndex: 0, unsold: [], bid: null, log: S.log || []
     };
+    S.live = false; S.ready = S.players.map(() => false); S.endsAt = null;
     undoStack = [];
   }
 
@@ -415,31 +463,36 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
   const auctionOver = () => S.players.every(p => slotsLeft(p) <= 0) || S.lotIndex >= S.lots.length;
 
   function placeBid(pi, amount) {
+    if (S.live === false || flash) return;
     undoStack.push(clone(S));
     S.bid = { amount, bidder: pi };
+    if (S.endsAt && S.endsAt - Date.now() < BUMP_MS) S.endsAt = Date.now() + BUMP_MS; // late bid: clock back to 5s
     render();
   }
   function hammer() {
+    if (flash || S.live === false) return;
     undoStack.push(clone(S));
+    S.endsAt = null;
     const id = currentLot();
     if (S.bid) {
       const p = S.players[S.bid.bidder];
       p.money -= S.bid.amount;
       p.team.push({ id, paid: S.bid.amount });
-      flash = { text: "SOLD", id };
+      flash = { text: "SOLD", id, bidder: S.bid.bidder, amt: S.bid.amount };
     } else {
       S.unsold.push(id);
       flash = { text: "PASSED", id };
     }
     render();
-    setTimeout(() => { flash = null; S.bid = null; S.lotIndex++; render(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 250 : 750);
+    setTimeout(() => { flash = null; S.bid = null; S.lotIndex++; S.endsAt = auctionOver() ? null : Date.now() + LOT_MS; render(); }, reduceMotion() ? 700 : (S.bid ? 2400 : 1100));
   }
-  function undo() { if (undoStack.length) { S = undoStack.pop(); flash = null; render(); } }
-  function reAuctionUnsold() { undoStack.push(clone(S)); S.lots = S.lots.concat(shuffle(S.unsold)); S.unsold = []; render(); }
+  function undo() { if (undoStack.length && !flash) { S = undoStack.pop(); if (S.phase === "auction" && S.live !== false && !auctionOver()) S.endsAt = Date.now() + LOT_MS; render(); } }
+  function reAuctionUnsold() { undoStack.push(clone(S)); S.lots = S.lots.concat(shuffle(S.unsold)); S.unsold = []; S.endsAt = Date.now() + LOT_MS; render(); }
 
   let deck = null;
   const DIFF = { 1: "Everyday", 2: "Skilled", 3: "Hard", 4: "Epic", 5: "Legendary" };
   function drawChallenge(kind) {
+    S.vote = newVote();
     if (window.ChallengeGen && window.CHALLENGE_DATA) {
       try {
         deck = deck || window.ChallengeGen.createDeck(window.CHALLENGE_DATA);
@@ -517,7 +570,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
   }
   function header(tag) {
     return `<header class="top"><div class="brand">${gavelSvg}<div><h1>Character Army Builder</h1><div class="phase-tag">${tag}</div></div></div>
-      <div class="row">${S.phase !== "setup" ? (confirmReset
+      <div class="row">${S.phase !== "setup" && NET.mode !== "guest" ? (confirmReset
         ? `<span class="confirm">End this game? <button class="btn small" data-act="reset-yes">End game</button><button class="btn small" data-act="reset-no">Keep playing</button></span>`
         : `<button class="btn small" data-act="reset">New game</button>`) : ""}</div></header>`;
   }
@@ -531,8 +584,9 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     const ok = n >= 2 && Math.min(need, pool) >= n * st.teamSize && st.budget >= st.teamSize;
     return header("Set the table") + `
     <div class="setup">
+      ${NET.panel()}
       <section class="panel">
-        <h2>Bidders</h2>
+        <h2>${NET.mode ? "Players" : "Bidders"}</h2>
         <div class="players-list">
           ${st.names.map((nm, i) => `<div class="player-input"><span class="dot" style="background:${PCOLORS[i]}"></span>
             <input type="text" id="pname-${i}" data-name="${i}" value="${esc(nm)}" placeholder="${i < 2 ? "Player " + (i + 1) : "Player " + (i + 1) + " (optional)"}" maxlength="24" aria-label="Player ${i + 1} name"></div>`).join("")}
@@ -552,7 +606,8 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
         <ol>
           <li><strong>One lot at a time.</strong> A random character is revealed and goes up for auction. The pool holds 4 characters per player, so not everyone gets their first pick.</li>
           <li><strong>Buzz in any time.</strong> No turns. The moment a character appears, anyone can hit their paddle. Every bid beats the last by at least $1; jump bids of $5, $10 or all in are allowed. On a keyboard, keys 1 to 4 buzz in +$1 for players 1 to 4. You always keep $1 for every empty seat on your team.</li>
-          <li><strong>Bring down the gavel.</strong> The top bidder pays and takes the character. No bids means it passes.</li>
+          <li><strong>Beat the clock.</strong> Each character gets 20 seconds. A bid in the last 5 seconds puts the clock back to 5. When time runs out the top bidder pays and takes the character; no bids means it passes.</li>
+          <li><strong>Playing online?</strong> Everyone sees the same auction on their own screen and bids with their own paddle. The host brings down the gavel and runs the challenge.</li>
           <li><strong>Face the challenge.</strong> Once teams are full, a random challenge is drawn. Argue your case, then the table picks a winner.</li>
         </ol>
         <p class="datanote">Playing with ${DATA.characters.length} characters from the roster and ${window.CHALLENGE_DATA ? `${window.CHALLENGE_DATA.curated.challenges.length} hand-written challenges, ${window.CHALLENGE_DATA.occupations.occupations.length} jobs and a mash-up generator with thousands of combinations` : DATA.challenges.challenges.length + " challenges"}.</p>
@@ -577,7 +632,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     }
     const c = charById(currentLot());
     const remaining = S.lots.length - S.lotIndex;
-    const stamp = flash && flash.id === c.id ? `<div class="stamp"><span>${flash.text}</span></div>` : "";
+    const stamp = flash && flash.id === c.id ? `<div class="stamp"><span>${flash.text}</span>${flash.text === "SOLD" && S.players[flash.bidder] ? `<em class="soldto" style="--pc:${S.players[flash.bidder].color}">${esc(S.players[flash.bidder].name)} gets ${esc(c.name)} for $${flash.amt}!</em>` : ""}</div>` : "";
     const leader = S.bid ? S.players[S.bid.bidder] : null;
     const cur = S.bid ? S.bid.amount : 0;
     const paddles = S.players.map((p, i) => {
@@ -587,7 +642,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
       return `<div class="paddle ${lead ? "leading" : ""} ${full ? "out" : ""}" style="--pc:${p.color}">
         <div class="ph"><span class="name"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span><span class="money">$${p.money}</span></div>
         <div class="stat">${full ? "Team full" : `${slotsLeft(p)} seat${slotsLeft(p) > 1 ? "s" : ""} open · max bid $${mx} · key ${i + 1}`}</div>
-        <div class="bids">${opts.map(o => `<button data-bid="${i}" data-amt="${o.amt}" ${full || lead || flash || o.amt > mx || o.amt <= cur ? "disabled" : ""} aria-label="${esc(p.name)} bids $${o.amt}">${o.label === "All in" ? "All" : o.label}</button>`).join("")}</div>
+        <div class="bids">${opts.map(o => `<button data-bid="${i}" data-amt="${o.amt}" ${S.live === false || full || lead || flash || o.amt > mx || o.amt <= cur ? "disabled" : ""} aria-label="${esc(p.name)} bids $${o.amt}">${o.label === "All in" ? "All" : o.label}</button>`).join("")}</div>
       </div>`;
     }).join("");
     return header(`Lot ${S.lotIndex + 1} of ${S.lots.length}`) + `
@@ -597,13 +652,14 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
           <div style="position:relative">${charCard(c)}${stamp}</div>
         </div>
         <div class="bidbox">
+          ${timerHtml()}
           <div class="highbid">
             <div><div class="eyebrow">${leader ? "High bid" : "Opening bid"}</div><div class="amt money">$${cur || 0}</div></div>
             <div class="who" style="color:${leader ? leader.color : "var(--text-soft)"}">${leader ? esc(leader.name) : "No bids yet"}</div>
           </div>
-          <div class="paddles">${paddles}</div>
+          ${S.live === false ? readyView() : ""}<div class="paddles">${paddles}</div>
           <div class="gavelrow">
-            <button class="btn primary" data-act="hammer" ${flash ? "disabled" : ""}>${leader ? `Sold to ${esc(leader.name)} for $${cur}` : "No bids. Pass this lot"}</button>
+            <button class="btn primary" data-act="hammer" ${flash || S.live === false ? "disabled" : ""}>${leader ? `Sell now to ${esc(leader.name)} for $${cur}` : "No bids. Pass this lot now"}</button>
             <button class="btn" data-act="undo" ${undoStack.length && !flash ? "" : "disabled"}>Undo</button>
           </div>
         </div>
@@ -622,7 +678,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
         ${ch.description ? `<p>${esc(ch.description)}</p>` : ""}
         ${d ? `<div class="diff">${DIFF[d] || "Difficulty"} ${[1, 2, 3, 4, 5].map(i => `<i class="${i <= d ? "on" : ""}"></i>`).join("")}</div>` : ""}
       </section>
-      ${!decided ? `<div class="row">
+      ${!decided && (!S.vote || S.vote.stage === "argue") ? `<div class="row">
         <button class="btn small" data-act="redraw">Draw a different challenge</button>
         ${hasMix || window.ChallengeGen ? `<button class="btn small" data-act="mix">Mix up a random one</button>` : ""}
       </div>
@@ -631,14 +687,15 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
       </div>` : ""}
       <section class="panel verdict">
         ${decided
-          ? `<div class="result-banner">${S.winner === null ? "No winner this round" : esc(S.players[S.winner].name) + " takes the round"}</div>
+          ? `<div class="result-banner">${S.winner === null ? (S.vote?.result?.tied?.length > 1 ? "It's a tie between " + S.vote.result.tied.map(i => esc(S.players[i].name)).join(" and ") : "No winner this round") : esc(S.players[S.winner].name) + " takes the round"}</div>
+             ${tallyView()}
              <div class="scoreboard">${S.players.map(p => `<span><span class="dot" style="background:${p.color}"></span>${esc(p.name)} <strong class="money">${p.wins}</strong></span>`).join("")}</div>
              <div class="row">
                <button class="btn primary" data-act="next-challenge">Next challenge, same teams</button>
                <button class="btn" data-act="rebid">New auction, keep scores</button>
              </div>
              ${S.log.length > 1 ? `<ol class="log">${S.log.map(l => `<li>${esc(l)}</li>`).join("")}</ol>` : ""}`
-          : `<h2>Who pulls it off?</h2>
+          : NET.mode ? voteView() : `<h2>Who pulls it off?</h2>
              <p class="hint">Each player makes the case for their team. Then the table decides.</p>
              <div class="row">${S.players.map((p, i) => `<button class="btn" style="--pc:${p.color};border-color:${p.color}" data-award="${i}">${esc(p.name)} wins</button>`).join("")}
                <button class="btn" data-award="none">Nobody could do it</button></div>`}
@@ -650,23 +707,42 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     const focusId = document.activeElement?.id;
     const sel = document.activeElement?.selectionStart;
     app.innerHTML = S.phase === "setup" ? setupView() : S.phase === "auction" ? auctionView() : S.phase === "teams" ? teamsPage() : challengeView();
+    NET.afterRender();
+    celebrate(); tick();
     if (focusId) { const el = document.getElementById(focusId); if (el) { el.focus(); try { if (sel != null) el.setSelectionRange(sel, sel); } catch (e) {} } }
   }
 
   // ---------- events ----------
   app.addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b || b.disabled) return;
-    if (b.dataset.bid) return placeBid(Number(b.dataset.bid), Number(b.dataset.amt));
-    if (b.dataset.cat) { const c = b.dataset.cat, cs = S.setup.cats; S.setup.cats = cs.includes(c) ? cs.filter(x => x !== c) : cs.concat(c); return render(); }
-    if (b.dataset.fame) { S.setup.fame = Number(b.dataset.fame); return render(); }
-    if (b.dataset.diff) { S.diffPref = Number(b.dataset.diff) || 0; return render(); }
-    if (b.dataset.award) return award(b.dataset.award === "none" ? null : Number(b.dataset.award));
-    switch (b.dataset.act) {
+    if (b.dataset.net) return NET.ui(b.dataset.net);
+    if (b.dataset.pick) { pickLocal(b.dataset.pick); return render(); }
+    const d = { ...b.dataset };
+    if (NET.mode === "guest") { if (d.bid != null || d.ready != null || d.voteready != null || d.vote != null) NET.send(d); return; }
+    act(d);
+  });
+  function act(d) {
+    if (d.bid != null) {
+      const pi = Number(d.bid), amt = Number(d.amt), p = S.players?.[pi];
+      if (S.phase !== "auction" || flash || !p || auctionOver()) return;
+      const cur = S.bid ? S.bid.amount : 0;
+      if (S.bid?.bidder === pi || !(amt > cur) || amt > maxBid(p)) return; // stale or invalid bid
+      return placeBid(pi, amt);
+    }
+    if (d.ready != null) { setReady(d.ready); return render(); }
+    if (d.voteready != null) { setVoteReady(d.voteready); return render(); }
+    if (d.vote != null) { castVote(Number(d.vote), Number(d.first), Number(d.second)); return render(); }
+    if (d.cat) { const c = d.cat, cs = S.setup.cats; S.setup.cats = cs.includes(c) ? cs.filter(x => x !== c) : cs.concat(c); return render(); }
+    if (d.fame) { S.setup.fame = Number(d.fame); return render(); }
+    if (d.diff) { S.diffPref = Number(d.diff) || 0; return render(); }
+    if (d.award) { if (S.winner !== undefined) return; return award(d.award === "none" ? null : Number(d.award)); }
+    switch (d.act) {
       case "start": startGame(); break;
       case "hammer": return hammer();
       case "undo": return undo();
       case "reauction": reAuctionUnsold(); return;
       case "to-challenge": return toChallenge();
+      case "countvotes": countVotes(); break;
       case "view-teams": S.phase = "teams"; break;
       case "back-auction": S.phase = "auction"; break;
       case "redraw": drawChallenge("list"); break;
@@ -678,9 +754,10 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
       case "reset-yes": confirmReset = false; S = { phase: "setup", setup: S.setup }; undoStack = []; break;
     }
     render();
-  });
+  }
   app.addEventListener("input", e => {
     const t = e.target;
+    if (NET.input(t)) return;
     if (t.dataset.name != null) { S.setup.names[Number(t.dataset.name)] = t.value; }
     else if (t.id === "budget") S.setup.budget = Math.max(1, parseInt(t.value) || 0);
     else if (t.id === "teamSize") S.setup.teamSize = Math.min(10, Math.max(1, parseInt(t.value) || 1));
@@ -690,6 +767,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     render();
   });
   document.addEventListener("keydown", e => {
+    if (NET.mode) return NET.key(e);
     if ((e.ctrlKey || e.metaKey) && e.key === "z" && S.phase === "auction") { e.preventDefault(); undo(); return; }
     if (S.phase !== "auction" || flash || auctionOver() || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.target.matches && e.target.matches("input, select, textarea")) return;
@@ -700,12 +778,474 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     }
   });
 
+  // ---------- lot timer, ready check, celebrations ----------
+  const LOT_MS = 20000, BUMP_MS = 5000;
+  const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function goLive() { S.live = true; S.ready = S.players.map(() => true); S.endsAt = Date.now() + LOT_MS; }
+  function setReady(who) {
+    if (S.phase !== "auction" || S.live !== false) return;
+    if (who === "all") return goLive();
+    const i = Number(who); if (!S.players[i]) return;
+    S.ready[i] = !S.ready[i];
+    if (S.ready.every(Boolean)) goLive();
+  }
+  function readyView() {
+    const online = NET.mode;
+    const mineReady = online && S.ready[NET.seat];
+    return `<div class="readybox panel">
+      <h2>Ready to bid?</h2>
+      <p class="hint">${online ? "Take a look at the first character. The 20-second clock starts once everyone is ready." : "Take a look at the first character. The 20-second clock starts when you hit the button."}</p>
+      ${online ? `<ul class="readylist">${S.players.map((p, i) => `<li class="${S.ready[i] ? "is-ready" : ""}"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}<span class="tag">${S.ready[i] ? "Ready" : "Not yet"}</span></li>`).join("")}</ul>` : ""}
+      <div class="row">
+        ${online ? `<button class="btn primary big" data-ready="${NET.seat}">${mineReady ? "Not ready yet" : "I'm ready"}</button>` : `<button class="btn primary big" data-ready="all">Start the bidding</button>`}
+        ${online === "host" ? `<button class="btn small" data-ready="all">Start without waiting</button>` : ""}
+      </div>
+    </div>`;
+  }
+  function timerHtml() {
+    if (S.live === false) return `<div class="lottimer waiting"><div class="bar"><i style="width:100%"></i></div><span class="secs">Waiting for everyone</span></div>`;
+    return `<div class="lottimer" id="lottimer"><div class="bar"><i id="lotbar"></i></div><span class="secs" id="lotsecs"></span></div>`;
+  }
+  function tick() {
+    if (S.phase !== "auction" || !S.endsAt) return;
+    const left = Math.max(0, S.endsAt - Date.now());
+    const bar = document.getElementById("lotbar"), secs = document.getElementById("lotsecs"), box = document.getElementById("lottimer");
+    if (bar) bar.style.width = (Math.min(1, left / LOT_MS) * 100) + "%";
+    if (secs) secs.textContent = flash ? "" : Math.ceil(left / 1000) + "s";
+    if (box) box.classList.toggle("urgent", left <= BUMP_MS && !flash);
+    if (NET.mode !== "guest" && !flash && left <= 0 && !auctionOver()) hammer();
+  }
+  setInterval(tick, 200);
+
+  // confetti
+  let fx = null;
+  function confetti(colors, count = 90, big = false) {
+    if (reduceMotion()) return;
+    if (!fx) { fx = document.createElement("canvas"); fx.className = "fx"; fx.setAttribute("aria-hidden", "true"); document.body.appendChild(fx); }
+    const ctx = fx.getContext("2d"), W = fx.width = innerWidth, H = fx.height = innerHeight;
+    const cols = colors.map(c => c.startsWith("var(") ? getComputedStyle(document.documentElement).getPropertyValue(c.slice(4, -1)).trim() || "#d4a648" : c);
+    const parts = Array.from({ length: count }, () => ({
+      x: big ? Math.random() * W : W / 2 + (Math.random() - .5) * 120, y: big ? -20 - Math.random() * H * .5 : H * .45,
+      vx: big ? (Math.random() - .5) * 3 : (Math.random() - .5) * 14, vy: big ? 2 + Math.random() * 3 : -6 - Math.random() * 9,
+      r: Math.random() * Math.PI, vr: (Math.random() - .5) * .3, w: 6 + Math.random() * 6, h: 8 + Math.random() * 8,
+      c: cols[Math.floor(Math.random() * cols.length)]
+    }));
+    const t0 = performance.now(), dur = big ? 4200 : 2200;
+    (function frame(t) {
+      ctx.clearRect(0, 0, W, H);
+      const age = t - t0;
+      parts.forEach(p => { p.vy += .28; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.max(0, 1 - age / dur); ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore(); });
+      if (age < dur) requestAnimationFrame(frame); else ctx.clearRect(0, 0, W, H);
+    })(t0);
+  }
+  let celebrated = "";
+  function celebrate() {
+    if (S.phase === "challenge" && S.winner !== undefined) {
+      const key = "win:" + S.round + ":" + S.challenge?.id + ":" + S.winner;
+      if (celebrated === key) return; celebrated = key;
+      const t = S.vote?.result?.tied || (S.winner === null ? [] : [S.winner]);
+      if (t.length) confetti(t.map(i => S.players[i].color).concat("var(--brass)", "#ffffff"), 160, true);
+      return;
+    }
+    if (S.phase !== "auction") return;
+    if (flash && flash.text === "SOLD") {
+      const key = "lot:" + S.lotIndex + ":" + flash.id;
+      if (celebrated !== key) { celebrated = key; const w = S.players[flash.bidder]; confetti([w ? w.color : "var(--brass)", "var(--brass)", "#ffffff"]); }
+    } else if (!flash && auctionOver()) {
+      const key = "end:" + (S.lots || []).join(",").length + ":" + S.lotIndex + ":" + S.round;
+      if (celebrated !== key) { celebrated = key; confetti(S.players.map(p => p.color).concat("var(--brass)"), 220, true); }
+    }
+  }
+
+  // ---------- challenge voting (online) ----------
+  let myPick = { first: null, second: null };
+  const newVote = () => ({ stage: "argue", ready: S.players.map(() => false), ballots: S.players.map(() => null), result: null });
+  function setVoteReady(who) {
+    const v = S.vote; if (!v || v.stage !== "argue") return;
+    if (who === "all") v.ready = v.ready.map(() => true);
+    else { const i = Number(who); if (!S.players[i]) return; v.ready[i] = !v.ready[i]; }
+    if (v.ready.every(Boolean)) v.stage = "voting";
+  }
+  function castVote(i, first, second) {
+    const v = S.vote, n = S.players.length; if (!v || v.stage !== "voting" || !S.players[i]) return;
+    if (!(first >= 0 && first < n)) return;
+    if (n > 1 && !(second >= 0 && second < n && second !== first)) return;
+    v.ballots[i] = { first, second: n > 1 ? second : null };
+    if (v.ballots.every(Boolean)) countVotes();
+  }
+  function countVotes() {
+    const v = S.vote; if (!v || v.stage !== "voting" || !v.ballots.some(Boolean)) return;
+    const n = S.players.length, f = Array(n).fill(0), s = Array(n).fill(0);
+    v.ballots.forEach(b => { if (!b) return; f[b.first]++; if (b.second != null) s[b.second]++; });
+    const top = Math.max(...f);
+    let tied = f.map((x, i) => x === top ? i : -1).filter(i => i >= 0), tiebreak = false;
+    if (tied.length > 1) { tiebreak = true; const t2 = Math.max(...tied.map(i => s[i])); tied = tied.filter(i => s[i] === t2); }
+    v.result = { first: f, second: s, tied, tiebreak };
+    v.stage = "done";
+    if (tied.length === 1) {
+      S.winner = tied[0]; S.players[tied[0]].wins++;
+      S.log.unshift(`Round ${S.round}: ${S.challenge.title} — ${S.players[tied[0]].name} won${tiebreak ? " on second picks" : ""}`);
+    } else {
+      S.winner = null;
+      S.log.unshift(`Round ${S.round}: ${S.challenge.title} — tie between ${tied.map(i => S.players[i].name).join(" and ")}`);
+    }
+  }
+  function tallyView() {
+    const r = S.vote?.result; if (!r) return "";
+    const order = S.players.map((p, i) => i).sort((a, b) => r.first[b] - r.first[a] || r.second[b] - r.second[a]);
+    return `<table class="tally"><thead><tr><th scope="col">Team</th><th scope="col">1st picks</th><th scope="col">2nd picks</th></tr></thead><tbody>
+      ${order.map(i => `<tr class="${r.tied.includes(i) ? "lead" : ""}"><td><span class="dot" style="background:${S.players[i].color};display:inline-block;vertical-align:-2px;margin-right:8px"></span>${esc(S.players[i].name)}</td><td>${r.first[i]}</td><td>${r.second[i]}</td></tr>`).join("")}
+      </tbody></table>${r.tiebreak ? `<p class="hint">First picks were tied, so second picks broke the tie${r.tied.length > 1 ? ", and those were tied too" : ""}.</p>` : ""}`;
+  }
+  function voteView() {
+    const v = S.vote || (S.vote = newVote()), me = NET.seat, host = NET.mode === "host";
+    if (v.stage === "argue") {
+      return `<h2>Make your case</h2>
+        <p class="hint">Take as long as you like to argue why your team pulls this off. When you're done talking, hit Ready to vote. Voting opens once everyone is ready.</p>
+        <ul class="readylist">${S.players.map((p, i) => `<li class="${v.ready[i] ? "is-ready" : ""}"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}<span class="tag">${v.ready[i] ? "Ready" : "Still arguing"}</span></li>`).join("")}</ul>
+        <div class="row"><button class="btn primary big" data-voteready="${me}" data-mine="1">${v.ready[me] ? "Wait, I'm not done" : "Ready to vote"}</button>
+        ${host ? `<button class="btn small" data-voteready="all">Open voting now</button>` : ""}</div>`;
+    }
+    if (myPick.stage !== S.round + ":" + S.challenge.id) myPick = { stage: S.round + ":" + S.challenge.id, first: null, second: null };
+    const waiting = S.players.filter((p, i) => !v.ballots[i]).map(p => p.name);
+    if (v.ballots[me]) {
+      return `<h2>Vote cast</h2><p class="hint">You picked ${esc(S.players[v.ballots[me].first].name)} first${v.ballots[me].second != null ? ` and ${esc(S.players[v.ballots[me].second].name)} second` : ""}. Waiting for ${esc(waiting.join(", "))}.</p>
+        ${host ? `<div class="row"><button class="btn small" data-act="countvotes">Count the votes now</button></div>` : ""}`;
+    }
+    const two = S.players.length > 1;
+    const row = (k, label) => `<div class="pickrow"><span class="eyebrow">${label}</span><div class="row">${S.players.map((p, i) => {
+      const on = myPick[k] === i, blocked = k === "second" && myPick.first === i;
+      return `<button class="btn pick" data-pick="${k}:${i}" data-mine="1" aria-pressed="${on}" style="--pc:${p.color}" ${blocked ? "disabled" : ""}>${esc(p.name)}${i === me ? " (you)" : ""}</button>`; }).join("")}</div></div>`;
+    const ok = myPick.first != null && (!two || myPick.second != null);
+    return `<h2>Who pulls it off?</h2>
+      <p class="hint">Pick the team you think did best, then your second choice. Voting for yourself is allowed. Votes stay secret until everyone has voted.</p>
+      ${row("first", "1st pick")}${two ? row("second", "2nd pick") : ""}
+      <div class="row"><button class="btn primary big" data-vote="${me}" data-first="${myPick.first ?? ""}" data-second="${myPick.second ?? ""}" data-mine="1" ${ok ? "" : "disabled"}>Cast my vote</button>
+      ${host && v.ballots.some(Boolean) ? `<button class="btn small" data-act="countvotes">Count the votes now</button>` : ""}</div>
+      ${waiting.length < S.players.length ? `<p class="hint">Still voting: ${esc(waiting.join(", "))}</p>` : ""}`;
+  }
+  function pickLocal(spec) {
+    const [k, i] = spec.split(":"); const n = Number(i);
+    myPick[k] = myPick[k] === n ? null : n;
+    if (k === "first" && myPick.second === n) myPick.second = null;
+  }
+
+  // ---------- online play (PeerJS: the host's browser runs the game, everyone else mirrors it) ----------
+  const NET = (() => {
+    const Q = new URLSearchParams(location.search);
+    const ALPH = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+    const ss = {
+      get(k) { try { return JSON.parse(sessionStorage.getItem(k)); } catch (e) { return null; } },
+      set(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+      del(k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+    };
+    const N = { mode: null, code: "", me: "", seat: 0, status: "", error: "", lobby: [], peer: null, conn: null, joined: false, retries: 0, joinCode: (Q.get("room") || "").toUpperCase().replace(/[^A-Z0-9]/g, "") };
+    let libP = null;
+    function lib() {
+      if (window.Peer) return Promise.resolve();
+      return libP = libP || new Promise((res, rej) => {
+        const s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js";
+        s.onload = res;
+        s.onerror = () => { libP = null; s.remove(); rej(new Error("Couldn't load online play. Check your internet connection and try again.")); };
+        document.head.appendChild(s);
+      });
+    }
+    const keepPeer = () => Q.get("peer") ? "&peer=" + encodeURIComponent(Q.get("peer")) : "";
+    function peerOpts() {
+      const h = Q.get("peer"); if (!h) return { debug: 0 };
+      const [host, port] = h.split(":");
+      return { host, port: Number(port) || 9000, path: "/", secure: false, debug: 0 };
+    }
+    const pid = code => "cab-room-" + code;
+    const newCode = () => Array.from({ length: 5 }, () => ALPH[Math.floor(Math.random() * ALPH.length)]).join("");
+    const cleanName = n => String(n || "").replace(/\s+/g, " ").trim().slice(0, 24);
+    const niceErr = e => e && e.type === "network" || e && e.type === "server-error" || e && e.type === "socket-error"
+      ? "Can't reach the online play server. Check your internet connection."
+      : e && e.type === "browser-incompatible" ? "This browser can't do online play. Try an up-to-date Chrome, Safari, Firefox or Edge."
+      : "Online play hit a problem" + (e && e.type ? " (" + e.type + ")" : "") + ".";
+    function fail(msg) { N.status = ""; N.error = msg; render(); }
+    function openPeer(id) {
+      return new Promise((res, rej) => {
+        const p = id ? new Peer(id, peerOpts()) : new Peer(peerOpts());
+        const onErr = e => { p.off("open", onOpen); try { p.destroy(); } catch (x) {} rej(e); };
+        const onOpen = () => { p.off("error", onErr); res(p); };
+        p.once("open", onOpen); p.once("error", onErr);
+      });
+    }
+    function keepAlive(p) {
+      p.on("disconnected", () => { if (!p.destroyed) setTimeout(() => { try { if (!p.destroyed && p.disconnected) p.reconnect(); } catch (e) {} }, 1500); });
+    }
+    const setUrl = code => { try { history.replaceState(null, "", location.pathname + (code ? "?room=" + code + keepPeer() : (Q.get("peer") ? "?peer=" + encodeURIComponent(Q.get("peer")) : ""))); } catch (e) {} };
+
+    // ----- host -----
+    async function host(name, resume, attempt = 0) {
+      name = cleanName(name);
+      if (!name) return fail("Type your name first, then press Host.");
+      N.me = name; N.error = ""; N.status = resume ? "Reopening room " + resume.code + "…" : "Opening a room…"; render();
+      try { await lib(); } catch (e) { return fail(e.message); }
+      const code = resume ? resume.code : newCode();
+      let peer;
+      try { peer = await openPeer(pid(code)); }
+      catch (err) {
+        if (err && err.type === "unavailable-id") {
+          if (!resume) return host(name, null, attempt + 1);
+          if (attempt < 10) return setTimeout(() => host(name, resume, attempt + 1), 2500);
+          ss.del("cab-host"); return fail("Couldn't reopen room " + code + ". Host a new game instead.");
+        }
+        return fail(niceErr(err));
+      }
+      N.peer = peer; keepAlive(peer);
+      N.mode = "host"; N.code = code; N.seat = 0; N.status = ""; N.joinCode = "";
+      if (resume && resume.S && resume.S.phase) {
+        S = resume.S; undoStack = []; if (S.endsAt) S.endsAt = Date.now() + LOT_MS;
+        N.lobby = (resume.lobby || [{ name }]).map((l, i) => ({ name: l.name, conn: null, online: i === 0 }));
+        N.lobby[0].name = name;
+      } else {
+        N.lobby = [{ name, conn: null, online: true }];
+        if (S.phase !== "setup") S = { phase: "setup", setup: S.setup };
+      }
+      peer.on("connection", c => onGuest(c));
+      clearInterval(N.hb); N.hb = setInterval(() => {
+        let changed = false;
+        N.lobby.forEach((l, i) => {
+          if (!i || !l.conn) return;
+          if (Date.now() - (l.conn._seen || 0) > 10000) { try { l.conn.close(); } catch (e) {} l.conn = null; l.online = false; changed = true; }
+          else if (l.conn.open) try { l.conn.send({ t: "ping" }); } catch (e) {}
+        });
+        if (changed) render();
+      }, 2500);
+      peer.on("error", err => { if (err && err.type === "peer-unavailable") return; N.status = niceErr(err); render(); });
+      setUrl(code);
+      render();
+    }
+    function onGuest(c) {
+      c.on("data", m => {
+        if (!m || typeof m !== "object") return;
+        c._seen = Date.now();
+        if (m.t === "pong") return;
+        if (m.t === "hello") return welcome(c, m.name);
+        if (m.t === "act") { const i = N.lobby.findIndex(l => l.conn === c); if (i > 0) guestAct(m.d, i); }
+      });
+      c.on("close", () => {
+        const i = N.lobby.findIndex(l => l.conn === c);
+        if (i > 0) { N.lobby[i].conn = null; N.lobby[i].online = false; render(); }
+      });
+      c.on("error", () => {});
+    }
+    function welcome(c, raw) {
+      let name = cleanName(raw) || "Player";
+      const same = l => l.name.toLowerCase() === name.toLowerCase();
+      let i = N.lobby.findIndex(l => !l.online && same(l));
+      if (i < 0) {
+        if (S.phase !== "setup") {
+          const away = N.lobby.filter(l => !l.online).map(l => l.name);
+          c.send({ t: "nomatch", names: away });
+          return setTimeout(() => c.close(), 500);
+        }
+        if (N.lobby.length >= 4) { c.send({ t: "full" }); return setTimeout(() => c.close(), 500); }
+        let base = name, k = 2;
+        while (N.lobby.some(same)) name = base.slice(0, 21) + " " + k++;
+        N.lobby.push({ name, conn: null, online: true });
+        i = N.lobby.length - 1;
+      }
+      const old = N.lobby[i].conn; if (old && old !== c) try { old.close(); } catch (e) {}
+      N.lobby[i].conn = c; N.lobby[i].online = true; c._seen = Date.now();
+      render();
+    }
+    function guestAct(d, i) {
+      if (!d) return;
+      if (d.ready != null) { if (Number(d.ready) === i) act({ ready: String(i) }); return; } // own ready button only
+      if (d.voteready != null) { if (Number(d.voteready) === i) act({ voteready: String(i) }); return; }
+      if (d.vote != null) { if (Number(d.vote) === i) act({ vote: String(i), first: String(d.first), second: String(d.second) }); return; }
+      if (d.bid == null || Number(d.bid) !== i) return; // guests can only bid with their own paddle
+      act({ bid: String(i), amt: String(d.amt) });
+    }
+
+    // ----- guest -----
+    async function join(name, code) {
+      name = cleanName(name); code = String(code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+      if (!name) return fail("Type your name first, then press Join.");
+      if (code.length < 4) return fail("Type the room code your host sent you.");
+      N.me = name; N.joinCode = code; N.error = ""; N.status = "Connecting to room " + code + "…"; render();
+      try { await lib(); } catch (e) { return fail(e.message); }
+      if (!N.peer || N.peer.destroyed) {
+        try { N.peer = await openPeer(); } catch (err) { return fail(niceErr(err)); }
+        keepAlive(N.peer);
+        N.peer.on("error", err => {
+          if (err && err.type === "peer-unavailable") return lost("Couldn't find room " + N.joinCode + ". Check the code, and make sure the host still has the game open.");
+          if (!N.joined) fail(niceErr(err));
+        });
+      }
+      connect();
+    }
+    function connect() {
+      const c = N.peer.connect(pid(N.joinCode), { serialization: "json", reliable: true });
+      N.conn = c;
+      let opened = false;
+      const t = setTimeout(() => { if (!opened && N.conn === c) { try { c.close(); } catch (e) {} lost("Couldn't reach room " + N.joinCode + ". It may be that your networks can't connect directly; try another Wi-Fi or mobile data."); } }, 20000);
+      c.on("open", () => {
+        opened = true; clearTimeout(t); N.seen = Date.now(); c.send({ t: "hello", name: N.me });
+        clearInterval(N.hb); N.hb = setInterval(() => { if (N.conn === c && Date.now() - N.seen > 10000) { clearInterval(N.hb); N.conn = null; try { c.close(); } catch (e) {} lost("Lost the connection to the host."); } }, 2000);
+      });
+      c.on("data", m => onHostMsg(m, c));
+      c.on("close", () => { if (N.conn === c) lost("Lost the connection to the host."); });
+      c.on("error", () => {});
+    }
+    function lost(msg) {
+      if (N.mode !== "guest" && !N.joined) { N.conn = null; return fail(msg); }
+      if (N.retries < 20) {
+        N.retries++; N.status = "Connection lost. Reconnecting… (try " + N.retries + " of 20)"; render();
+        clearTimeout(lost.t); lost.t = setTimeout(() => { if (N.mode === "guest" && N.peer && !N.peer.destroyed) connect(); }, 3000);
+      } else { N.conn = null; N.status = ""; N.error = "The host seems to have left. Leave the room and join again when they're back."; render(); }
+    }
+    function onHostMsg(m, c) {
+      if (!m || typeof m !== "object" || N.conn !== c) return;
+      N.seen = Date.now();
+      if (m.t === "ping") { try { c.send({ t: "pong" }); } catch (e) {} return; }
+      if (m.t === "state") {
+        N.mode = "guest"; N.joined = true; N.retries = 0; N.status = ""; N.error = "";
+        S = m.S; flash = m.flash; S.endsAt = m.endsIn != null ? Date.now() + m.endsIn : null; undoStack = m.canUndo ? [null] : []; confirmReset = false;
+        N.lobby = m.lobby || []; N.seat = m.you; N.code = m.code;
+        ss.set("cab-guest", { code: N.code, me: N.me }); setUrl(N.code);
+        render();
+      } else if (m.t === "full") { leave(true); fail("That room already has 4 players."); }
+      else if (m.t === "nomatch") { leave(true); fail(m.names && m.names.length ? "That game has already started. To get back in, join with the name you used before: " + m.names.join(" or ") + "." : "That game has already started and every seat is taken."); }
+    }
+
+    // ----- shared -----
+    function send(d) {
+      if (N.mode === "host") return act(d);
+      if (N.mode === "guest" && N.conn && N.conn.open) try { N.conn.send({ t: "act", d }); } catch (e) {}
+    }
+    function leave(quiet) {
+      const wasHost = N.mode === "host";
+      clearTimeout(lost.t); clearInterval(N.hb);
+      try { N.conn && N.conn.close(); } catch (e) {}
+      try { N.lobby.forEach(l => l.conn && l.conn.close()); } catch (e) {}
+      try { N.peer && N.peer.destroy(); } catch (e) {}
+      Object.assign(N, { mode: null, code: "", seat: 0, status: "", error: "", lobby: [], peer: null, conn: null, joined: false, retries: 0, joinCode: "" });
+      ss.del("cab-host"); ss.del("cab-guest"); setUrl("");
+      const keep = S.setup || defaultSetup();
+      S = { phase: "setup", setup: wasHost ? keep : defaultSetup() }; flash = null; undoStack = [];
+      if (!quiet) render();
+    }
+    function link() { return location.origin + location.pathname + "?room=" + N.code + keepPeer(); }
+    function ui(what) {
+      const nm = document.getElementById("netname"), cd = document.getElementById("netcode");
+      if (nm) N.me = nm.value; if (cd) N.joinCode = cd.value;
+      if (what === "host") return host(N.me);
+      if (what === "join") return join(N.me, N.joinCode);
+      if (what === "leave") return leave();
+      if (what === "copy") {
+        const done = () => { N.status = "Link copied. Paste it to your friends."; render(); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link()).then(done, () => { const el = document.getElementById("sharelink"); if (el) { el.select(); } });
+        else { const el = document.getElementById("sharelink"); if (el) el.select(); }
+        return;
+      }
+      if (what === "share" && navigator.share) navigator.share({ title: "Character Army Builder", text: "Join my game. Room code " + N.code, url: link() }).catch(() => {});
+    }
+    function input(t) {
+      if (t.id === "netname") { N.me = t.value; return true; }
+      if (t.id === "netcode") { N.joinCode = t.value; return true; }
+      return t.id === "sharelink";
+    }
+    function key(e) {
+      if (e.target.matches && e.target.matches("input, select, textarea")) return;
+      if (N.mode === "host" && (e.ctrlKey || e.metaKey) && e.key === "z" && S.phase === "auction") { e.preventDefault(); undo(); return; }
+      if (S.phase !== "auction" || flash || auctionOver() || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === " " || Number(e.key) === N.seat + 1) {
+        const p = S.players[N.seat]; if (!p) return;
+        e.preventDefault();
+        const cur = S.bid ? S.bid.amount : 0;
+        if (S.bid?.bidder !== N.seat && cur + 1 <= maxBid(p)) send({ bid: String(N.seat), amt: String(cur + 1) });
+      }
+    }
+    function panel() {
+      const err = N.error ? `<p class="neterr" role="alert">${esc(N.error)}</p>` : "";
+      const st = N.status ? `<p class="hint netstatus" aria-live="polite">${esc(N.status)}</p>` : "";
+      if (N.mode) {
+        return `<section class="panel online">
+          <h2>Online room <span class="roomcode">${esc(N.code)}</span></h2>
+          ${N.mode === "host"
+            ? `<p class="hint">Send your friends this link, or have them open the game and type the code <strong>${esc(N.code)}</strong>. Up to 4 players, each on their own device. Keep this page open: your browser runs the game.</p>
+               <div class="sharerow"><input type="text" id="sharelink" readonly value="${esc(link())}" aria-label="Invite link" onclick="this.select()"><button class="btn small primary" data-net="copy">Copy link</button>${navigator.share ? `<button class="btn small" data-net="share">Share</button>` : ""}</div>`
+            : `<p class="hint">You're in. ${esc(N.lobby[0]?.name || "The host")} picks the settings and opens the auction.</p>`}
+          <ul class="lobby">${N.lobby.map((l, i) => `<li><span class="dot" style="background:${PCOLORS[i]}"></span><span>${esc(l.name)}</span>${i === 0 ? `<span class="tag">host</span>` : ""}${i === N.seat ? `<span class="tag">you</span>` : ""}${l.online ? "" : `<span class="tag away">away</span>`}</li>`).join("")}
+            ${N.mode === "host" && N.lobby.length < 2 ? `<li class="waiting">Waiting for friends to join…</li>` : ""}</ul>
+          ${st}${err}
+          <div class="row"><button class="btn small" data-net="leave">${N.mode === "host" ? "Close the room" : "Leave the room"}</button></div>
+        </section>`;
+      }
+      const joining = !!N.joinCode;
+      return `<section class="panel online">
+        <h2>Play online</h2>
+        <p class="hint">${joining ? `You've been invited to room <strong>${esc(N.joinCode)}</strong>. Type your name and press Join.` : "Friends in different places? One person hosts and sends a link. Everyone plays on their own phone or computer."}</p>
+        <div class="netform">
+          <div class="field"><label for="netname">Your name</label><input type="text" id="netname" maxlength="24" value="${esc(N.me)}" placeholder="Your name" autocomplete="nickname"></div>
+          <div class="field"><label for="netcode">Room code</label><input type="text" id="netcode" maxlength="8" value="${esc(N.joinCode)}" placeholder="e.g. K7QXM" autocapitalize="characters" autocomplete="off" spellcheck="false"></div>
+        </div>
+        <div class="row">
+          <button class="btn ${joining ? "primary" : ""}" data-net="join">Join a room</button>
+          <button class="btn ${joining ? "" : "primary"}" data-net="host">Host a new game</button>
+        </div>
+        ${st}${err}
+        <p class="hint">All in one room? Skip this and fill in the bidders below to play on one device.</p>
+      </section>`;
+    }
+    function bar() {
+      if (!N.mode || S.phase === "setup") return "";
+      const me = N.lobby[N.seat]?.name || N.me;
+      const away = N.lobby.filter(l => !l.online).map(l => l.name);
+      return `<div class="netbar" role="status"><span>Room <strong>${esc(N.code)}</strong></span><span>You're <strong>${esc(me)}</strong>${N.mode === "host" ? " (host)" : ""}</span>
+        ${away.length ? `<span class="away">${esc(away.join(", "))} ${away.length > 1 ? "are" : "is"} away${N.mode === "host" ? ". They can rejoin with the same name." : ""}</span>` : ""}
+        ${N.status ? `<span class="away">${esc(N.status)}</span>` : ""}${N.error ? `<span class="neterr">${esc(N.error)}</span> <button class="btn small" data-net="leave">Leave</button>` : ""}
+        ${N.mode === "guest" && S.phase === "auction" ? `<span class="hint">${esc(N.lobby[0]?.name || "The host")} runs the gavel. You bid with your own paddle (space bar bids +$1).</span>` : ""}</div>`;
+    }
+    function afterRender() {
+      if (!N.mode) return;
+      if (N.mode === "host") {
+        if (S.phase === "setup") {
+          const pruned = N.lobby.filter((l, i) => i === 0 || l.online);
+          const names = [0, 1, 2, 3].map(i => pruned[i]?.name || "");
+          if (pruned.length !== N.lobby.length || names.join("|") !== S.setup.names.join("|")) { N.lobby = pruned; S.setup.names = names; return render(); }
+        }
+        const base = { t: "state", S, flash, endsIn: S.endsAt ? S.endsAt - Date.now() : null, canUndo: undoStack.length > 0, lobby: N.lobby.map(l => ({ name: l.name, online: l.online })), code: N.code };
+        N.lobby.forEach((l, i) => { if (i && l.conn && l.conn.open) try { l.conn.send({ ...base, you: i }); } catch (e) {} });
+        ss.set("cab-host", { code: N.code, me: N.me, S, lobby: base.lobby });
+      }
+      app.querySelectorAll("input[data-name]").forEach(el => { el.disabled = true; });
+      app.querySelectorAll("button[data-bid]").forEach(el => { if (Number(el.dataset.bid) !== N.seat) el.disabled = true; });
+      if (N.mode === "guest") {
+        app.querySelectorAll("button, input, select").forEach(el => {
+          if (el.dataset.net || el.id === "sharelink" || el.dataset.bid != null || el.dataset.ready === String(N.seat) || el.dataset.mine) return;
+          el.disabled = true;
+        });
+      }
+      const pads = app.querySelectorAll(".paddle"); if (pads[N.seat]) pads[N.seat].classList.add("mine");
+      const b = bar(); if (b) { const h = app.querySelector("header.top"); if (h) h.insertAdjacentHTML("afterend", b); }
+      if (N.mode === "guest" && S.phase === "setup") {
+        const btn = app.querySelector('[data-act="start"]'); if (btn) btn.textContent = "Waiting for " + (N.lobby[0]?.name || "the host") + " to open the auction";
+      }
+    }
+    addEventListener("pagehide", () => { try { N.conn && N.conn.close(); N.lobby.forEach(l => l.conn && l.conn.close()); N.peer && N.peer.destroy(); } catch (e) {} });
+    function boot() {
+      const h = ss.get("cab-host");
+      if (h && h.code && h.me) return host(h.me, h);
+      const g = ss.get("cab-guest");
+      if (g && g.code && g.me && (!N.joinCode || N.joinCode === g.code)) return join(g.me, g.code);
+    }
+    return { get mode() { return N.mode; }, get seat() { return N.seat; }, send, ui, input, key, panel, afterRender, boot };
+  })();
+
   // ---------- boot ----------
   window.claude?.hot?.snapshot?.(() => ({ S, undoStack }));
   async function start(saved) {
     await loadData();
     if (saved && saved.S && saved.S.phase) { S = saved.S; undoStack = saved.undoStack || []; }
     render();
+    NET.boot();
   }
   render();
   window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});

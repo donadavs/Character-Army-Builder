@@ -874,7 +874,20 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     const now = Date.now(), key = S.lotIndex + ":" + currentLot();
     if (brain.key !== key) {
       brain = { key, bots: {}, lastBid: "none", heat: 0 };
-      S.players.forEach((p, i) => { if (p.bot) brain.bots[i] = { value: botValue(), bumps: 0, next: now + 1500 + Math.random() * 5000 }; });
+      const lotsLeft = S.lots.length - S.lotIndex; // including this one
+      const endgame = lotsLeft <= Math.max(3, S.players.length);
+      S.players.forEach((p, i) => {
+        if (!p.bot) return;
+        let value = botValue();
+        // Late in the auction, a bot sitting on spare cash multiplies its value so it ends up spending it all.
+        if (endgame && p.money > 0) {
+          const share = p.money / lotsLeft;
+          if (share > value) value = Math.round(value * (share / value) * (0.9 + Math.random() * 0.4));
+          if (lotsLeft === 1) value = p.money;
+          value = Math.min(value, p.money);
+        }
+        brain.bots[i] = { value, bumps: 0, endgame, last: lotsLeft === 1, next: now + 1500 + Math.random() * 5000 };
+      });
     }
     const left = S.endsAt - now, cur = S.bid ? S.bid.amount : 0;
     const bidKey = S.bid ? S.bid.bidder + ":" + cur : "none";
@@ -898,8 +911,11 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
       if (S.bid?.bidder === pi) continue;
       const limit = Math.min(b.value, maxBid(p));
       if (cur + 1 > limit) continue;
-      if (left > 6000 && Math.random() < 0.35) continue; // early on, sometimes hold back
-      const amt = cur + 1 < limit && Math.random() < 0.25 ? cur + 2 : cur + 1;
+      if (left > 6000 && !b.endgame && Math.random() < 0.35) continue; // early on, sometimes hold back
+      let amt = cur + 1 < limit && Math.random() < 0.25 ? cur + 2 : cur + 1;
+      // In the endgame there's no point saving money, so bid big straight away.
+      if (b.endgame) amt = b.last ? limit : Math.max(amt, Math.round(limit * (0.6 + Math.random() * 0.4)));
+      amt = Math.min(amt, limit);
       placeBid(pi, amt);
       return;
     }

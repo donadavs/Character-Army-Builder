@@ -915,9 +915,10 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
         for (let j = 0; j < w.length; j++) { if (j === excl) continue; if ((r -= w[j]) < 0) return j; }
         return w.findIndex((x, j) => j !== excl);
       };
-      const first = pickW(-1), second = S.players.length > 1 ? pickW(first) : null;
-      castVote(i, first, second);
+      // A bot gets one vote, and it only counts as a tiebreaker (it's added to the 2nd picks).
+      v.ballots[i] = { first: null, second: pickW(-1), bot: true };
     });
+    if (v.ballots.every(Boolean)) countVotes();
   }
 
   // ---------- challenge voting (online) ----------
@@ -939,7 +940,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
   function countVotes() {
     const v = S.vote; if (!v || v.stage !== "voting" || !v.ballots.some(Boolean)) return;
     const n = S.players.length, f = Array(n).fill(0), s = Array(n).fill(0);
-    v.ballots.forEach(b => { if (!b) return; f[b.first]++; if (b.second != null) s[b.second]++; });
+    v.ballots.forEach(b => { if (!b) return; if (b.first != null) f[b.first]++; if (b.second != null) s[b.second]++; });
     const top = Math.max(...f);
     let tied = f.map((x, i) => x === top ? i : -1).filter(i => i >= 0), tiebreak = false;
     if (tied.length > 1) { tiebreak = true; const t2 = Math.max(...tied.map(i => s[i])); tied = tied.filter(i => s[i] === t2); }
@@ -958,7 +959,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     const order = S.players.map((p, i) => i).sort((a, b) => r.first[b] - r.first[a] || r.second[b] - r.second[a]);
     return `<table class="tally"><thead><tr><th scope="col">Team</th><th scope="col">1st picks</th><th scope="col">2nd picks</th></tr></thead><tbody>
       ${order.map(i => `<tr class="${r.tied.includes(i) ? "lead" : ""}"><td><span class="dot" style="background:${S.players[i].color};display:inline-block;vertical-align:-2px;margin-right:8px"></span>${esc(S.players[i].name)}</td><td>${r.first[i]}</td><td>${r.second[i]}</td></tr>`).join("")}
-      </tbody></table>${r.tiebreak ? `<p class="hint">First picks were tied, so second picks broke the tie${r.tied.length > 1 ? ", and those were tied too" : ""}.</p>` : ""}`;
+      </tbody></table>${S.players.some(p => p.bot) ? `<p class="hint">Bots get one vote each, counted with the 2nd picks, so they only matter in a tie.</p>` : ""}${r.tiebreak ? `<p class="hint">First picks were tied, so second picks broke the tie${r.tied.length > 1 ? ", and those were tied too" : ""}.</p>` : ""}`;
   }
   function voteView() {
     const v = S.vote || (S.vote = newVote()), me = NET.seat, host = NET.mode === "host";

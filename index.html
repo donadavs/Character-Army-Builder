@@ -1722,22 +1722,30 @@ window.Soundtrack = (() => {
   let ctx = null, master = null, bus = null, delay = null, noiseBuf = null, timer = null;
   let muted = false, step = 0, nextTime = 0;
   let bass = 0, pendingBass = null, phrase = null, pendingPhrase = null;
-  let keyLevel = 0, playedKey = 0, loop = false;
+  let keyLevel = 0, playedKey = 0, loop = false, menu = !window.SOUNDTRACK_NO_BUTTON, harmRotate = true, lastMel = -1, lastHarm = -1;
   const parts = { drums: true, bass: true, mel: true, harm: true };
-  try { muted = localStorage.getItem("cab-music") === "off"; } catch (e) {}
+  // per-player mix (0..1), saved in this browser only
+  const mix = { master: 0.8, drums: 0.8, bass: 0.8, mel: 0.8, harm: 0.8 };
+  const pg = {};                                  // part gain nodes
+  let pluckSend = null;
+  try { muted = localStorage.getItem("cab-music") === "off"; Object.assign(mix, JSON.parse(localStorage.getItem("cab-music-mix") || "{}")); } catch (e) {}
+  const curve = v => v * v;                       // sliders feel more even on a squared curve
 
   function init() {
     if (ctx) return;
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
     ctx = new AC();
-    master = ctx.createGain(); master.gain.value = muted ? 0 : 0.5;
+    master = ctx.createGain(); master.gain.value = muted ? 0 : 0.6 * curve(mix.master);
     const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 4;
     master.connect(comp); comp.connect(ctx.destination);
     bus = ctx.createGain(); bus.connect(master);
+    ["drums", "bass", "mel", "harm"].forEach(k => { pg[k] = ctx.createGain(); pg[k].gain.value = curve(mix[k]); pg[k].connect(bus); });
     delay = ctx.createDelay(1); delay.delayTime.value = STEP * 3;
     const fb = ctx.createGain(); fb.gain.value = 0.32;
     const wet = ctx.createGain(); wet.gain.value = 0.28;
     const dl = ctx.createBiquadFilter(); dl.type = "lowpass"; dl.frequency.value = 2400;
+    pg.mel.connect(delay);
+    pluckSend = ctx.createGain(); pluckSend.gain.value = curve(mix.harm); pluckSend.connect(delay);
     delay.connect(dl); dl.connect(fb); fb.connect(delay); dl.connect(wet); wet.connect(bus);
     noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -1763,31 +1771,30 @@ window.Soundtrack = (() => {
     return { o, f, g };
   }
   function playBass(m, t, dur) {
-    const v = voice("sawtooth", hz(m), t, dur, 0.22, 900, bus, 0, 6);
+    const v = voice("sawtooth", hz(m), t, dur, 0.22, 900, pg.bass, 0, 6);
     v.f.frequency.setValueAtTime(1400, t); v.f.frequency.exponentialRampToValueAtTime(260, t + Math.min(dur, 0.25));
-    voice("sine", hz(m - 12 < 28 ? m : m - 12), t, dur, 0.28, 400);
+    voice("sine", hz(m - 12 < 28 ? m : m - 12), t, dur, 0.28, 400, pg.bass);
   }
   function playLead(m, t, dur) {
-    const v = voice("square", hz(m), t, dur, 0.07, 3200);
+    const v = voice("square", hz(m), t, dur, 0.07, 3200, pg.mel);
     const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 5.5; lg.gain.value = 9;
     lfo.connect(lg); lg.connect(v.o.detune); lfo.start(t + 0.12); lfo.stop(t + dur + 0.05);
-    v.g.connect(delay);
-    voice("triangle", hz(m + 12), t, dur, 0.035, 5000);
+    voice("triangle", hz(m + 12), t, dur, 0.035, 5000, pg.mel);
   }
   function playStab(ms, t, dur, pad) {
     ms.forEach(m => [-7, 7].forEach(dt => {
-      const v = voice("sawtooth", hz(m), t, dur, pad ? 0.028 : 0.04, pad ? 1200 : 1800, bus, dt);
+      const v = voice("sawtooth", hz(m), t, dur, pad ? 0.028 : 0.04, pad ? 1200 : 1800, pg.harm, dt);
       if (pad) { v.g.gain.cancelScheduledValues(t); env(v.g, t, 0.18, 0.028, dur, 0.25); }
     }));
   }
   function playPluck(m, t, dur) {
-    const v = voice("triangle", hz(m), t, Math.min(dur, 0.35), 0.09, 2600);
-    v.g.connect(delay);
+    const v = voice("triangle", hz(m), t, Math.min(dur, 0.35), 0.09, 2600, pg.harm);
+    v.g.connect(pluckSend);
   }
   function noise(t, dur, peak, type, freq, q = 1) {
     const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
     s.buffer = noiseBuf; f.type = type; f.frequency.value = freq; f.Q.value = q;
-    s.connect(f); f.connect(g); g.connect(bus);
+    s.connect(f); f.connect(g); g.connect(pg.drums);
     g.gain.setValueAtTime(peak, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02);
   }
@@ -1795,11 +1802,11 @@ window.Soundtrack = (() => {
     const o = ctx.createOscillator(), g = ctx.createGain();
     o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
     g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
-    o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.35);
+    o.connect(g); g.connect(pg.drums); o.start(t); o.stop(t + 0.35);
   }
   function snare(t, ghost) {
     noise(t, ghost ? 0.06 : 0.16, ghost ? 0.06 : 0.3, "bandpass", 1800, 0.8);
-    if (!ghost) { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = 190; g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1); o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.12); }
+    if (!ghost) { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = 190; g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1); o.connect(g); g.connect(pg.drums); o.start(t); o.stop(t + 0.12); }
   }
   const hat = (t, open, acc) => noise(t, open ? 0.22 : 0.035, acc ? 0.09 : 0.05, "highpass", 8000);
   const crash = t => { noise(t, 1.6, 0.16, "highpass", 5000); noise(t, 0.9, 0.08, "bandpass", 3000, 0.5); };
@@ -1812,9 +1819,10 @@ window.Soundtrack = (() => {
   function playStep(n, t) {
     const s16 = n % 16, s32 = n % 32;
     if (s16 === 0 && playedKey !== keyLevel) { playedKey = keyLevel; crash(t); }
+    if (menu && s32 === 0) { newBass(); newPhrase(); }   // main menu: everything plays, reshuffled every two bars
     if (s16 % 4 === 0) {
       if (pendingBass != null) { bass = pendingBass; pendingBass = null; }
-      if (pendingPhrase) { phrase = { ...pendingPhrase, start: n }; pendingPhrase = null; }
+      if (pendingPhrase) { phrase = { ...pendingPhrase, start: n }; pendingPhrase = null; lastMel = phrase.mel; lastHarm = phrase.harm; }
     }
     const root = center(PROG[Math.floor(n / 16) % 4]), shift = playedKey * 2, len = d => STEP * d * 0.95;
     // drums
@@ -1829,6 +1837,7 @@ window.Soundtrack = (() => {
     // melody + harmony phrase
     if (phrase) {
       let i = n - phrase.start;
+      if (i >= 32 && phrase.hold) { phrase.start = n; i = 0; phrase.mel = lastMel = other(phrase.mel, MEL.length); phrase.harm = lastHarm = nextHarm(phrase.harm); }
       if (i >= 32 && loop && s16 === 0) { phrase.start = n; i = 0; }
       if (i >= 32) { if (!loop) phrase = null; }
       else {
@@ -1842,11 +1851,19 @@ window.Soundtrack = (() => {
     }
   }
   const other = (cur, n) => { if (cur == null || cur < 0) return Math.floor(Math.random() * n); const k = Math.floor(Math.random() * (n - 1)); return k >= cur ? k + 1 : k; };
-  function decision() {
+  // new bassline on the next beat
+  function newBass() { if (ctx) pendingBass = other(pendingBass ?? bass, BASS.length); }   // never the same bassline twice in a row
+  // random melody + harmony on the next beat: two bars, or looping until cut() when hold is true
+  function newPhrase(hold) {
     if (!ctx) return;
-    pendingBass = other(pendingBass ?? bass, BASS.length);
-    pendingPhrase = { mel: other(phrase ? phrase.mel : -1, MEL.length), harm: other(phrase ? phrase.harm : -1, HARM.length) };
+    const cur = pendingPhrase || phrase || { mel: lastMel, harm: lastHarm };   // never the same melody twice in a row
+    pendingPhrase = { mel: other(cur.mel, MEL.length), harm: nextHarm(cur.harm), hold: !!hold };
   }
+  // harmony changes on every other switch, never to the one it just played
+  let switches = 0;
+  function nextHarm(cur) { switches++; return cur == null || cur < 0 || switches % 2 === 0 ? other(cur, HARM.length) : cur; }
+  function cut() { phrase = null; pendingPhrase = null; }
+  function decision() { newBass(); newPhrase(); }
 
   // ---------- watch the game state for decisions ----------
   let prev = null;
@@ -1868,22 +1885,28 @@ window.Soundtrack = (() => {
       lot: S.lotIndex,
       flash: flash ? flash.text + ":" + flash.id : "",
       ready: (S.ready || []).filter(Boolean).length,
+      live: S.live !== false,
       vready: (v.ready || []).filter(Boolean).length,
       ballots: (v.ballots || []).filter(Boolean).length,
       winner: S.winner === undefined ? "u" : String(S.winner),
       chal: S.challenge ? S.challenge.id + ":" + S.challenge.title + ":" + S.round : "",
     };
     keyLevel = levelFor(S, keyLevel);
+    const wasMenu = menu; menu = S.phase === "setup";
+    if (wasMenu && !menu) cut();                // leaving the main menu stops its melody right away
     const p = prev; prev = now;
     if (!p) { playedKey = keyLevel; return; }
-    const changed =
-      (now.bid && now.bid !== p.bid && (now.amt > p.amt || now.lot !== p.lot)) ||
-      (now.flash && now.flash !== p.flash) ||
-      (now.phase !== p.phase && now.phase !== "setup") ||
-      now.ready > p.ready || now.vready > p.vready || now.ballots > p.ballots ||
-      (now.winner !== p.winner && now.winner !== "u") ||
-      (now.chal && now.chal !== p.chal);
-    if (changed) decision();
+    // New draft (a character goes up): new bassline + melody. Cuts off the SOLD phrase.
+    const newDraft = now.phase === "auction" && (p.phase !== "auction" || now.lot !== p.lot);
+    // Events: mission (challenge) revealed, back to the main menu, bidding opens on the first lot: new bassline + melody.
+    const event = (now.chal && now.chal !== p.chal) || (now.phase === "setup" && p.phase !== "setup") ||
+      (now.phase === "auction" && now.live && !p.live);
+    // New bid: new melody only.
+    const bid = now.bid && now.bid !== p.bid && (now.amt > p.amt || now.lot !== p.lot);
+    if (newDraft) cut();
+    if (newDraft || event) newBass();
+    if (newDraft || event || bid) newPhrase();          // SOLD and passed trigger nothing
+    // (harmony changes on every other one of these, see nextHarm)
   }
 
   // ---------- mute toggle ----------
@@ -1894,14 +1917,25 @@ window.Soundtrack = (() => {
     if (ctx) {
       const t = ctx.currentTime;
       master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t);
-      master.gain.linearRampToValueAtTime(m ? 0 : 0.5, t + 0.15);
+      master.gain.linearRampToValueAtTime(m ? 0 : 0.6 * curve(mix.master), t + 0.15);
       if (m) setTimeout(() => muted && ctx.suspend(), 250);
       else { ctx.resume(); nextTime = Math.max(nextTime, ctx.currentTime + 0.05); }
     }
     paint();
   }
-  let btn = null;
+  function setMix(k, v) {
+    mix[k] = Math.max(0, Math.min(1, v));
+    try { localStorage.setItem("cab-music-mix", JSON.stringify(mix)); } catch (e) {}
+    if (!ctx) return;
+    const t = ctx.currentTime, g = k === "master" ? master.gain : pg[k].gain, to = k === "master" ? (muted ? 0 : 0.6 * curve(mix.master)) : curve(mix[k]);
+    g.cancelScheduledValues(t); g.setTargetAtTime(to, t, 0.03);
+    if (k === "harm") { pluckSend.gain.cancelScheduledValues(t); pluckSend.gain.setTargetAtTime(to, t, 0.03); }
+  }
+  let btn = null, panel = null;
   function paint() {
+    if (panel) {
+      const sw = panel.querySelector("#mx-on"); sw.setAttribute("aria-checked", String(!muted)); sw.querySelector("span").textContent = muted ? "Off" : "On";
+    }
     if (!btn) return;
     btn.setAttribute("aria-pressed", String(!muted));
     btn.title = muted ? "Music off (M)" : "Music on (M)";
@@ -1913,12 +1947,38 @@ window.Soundtrack = (() => {
 .musicbtn span[aria-hidden] { font-size: 16px; }
 .musicbtn[aria-pressed="true"] { border-color: var(--brass, #d4a64a); }
 .musicbtn:focus-visible { outline: 2px solid var(--brass, #d4a64a); outline-offset: 2px; }
-@media (max-width: 520px) { .musicbtn .lbl { display: none; } .musicbtn { padding: 9px 11px; } }`;
+@media (max-width: 520px) { .musicbtn .lbl { display: none; } .musicbtn { padding: 9px 11px; } }
+.musicpanel { position: fixed; left: calc(12px + env(safe-area-inset-left, 0px)); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); z-index: 61; width: min(280px, calc(100vw - 24px)); display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; border: 1px solid var(--felt-line, rgba(255,255,255,.25)); background: var(--felt, #14261d); color: var(--text, #fff); box-shadow: 0 12px 32px rgba(0,0,0,.45); font: 14px/1.3 var(--sans, system-ui, sans-serif); }
+.musicpanel[hidden] { display: none; }
+.mxhead { display: flex; justify-content: space-between; align-items: center; }
+.mxhead strong { font-size: 15px; }
+.mxsw { display: inline-flex; align-items: center; gap: 8px; background: none; border: 0; color: inherit; font: 600 13px var(--sans, system-ui, sans-serif); cursor: pointer; padding: 4px; }
+.mxsw i { width: 34px; height: 20px; border-radius: 999px; background: rgba(255,255,255,.2); position: relative; transition: background .15s; }
+.mxsw i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .15s; }
+.mxsw[aria-checked="true"] i { background: var(--brass, #d4a64a); }
+.mxsw[aria-checked="true"] i::after { transform: translateX(14px); }
+.mxrow { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 10px; font-size: 13px; color: var(--text-soft, #c9d6cf); }
+.mxrow input { width: 100%; accent-color: var(--brass, #d4a64a); }
+.mxnote { margin: 0; font-size: 12px; color: var(--text-soft, #c9d6cf); }
+.musicbtn { left: calc(12px + env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+.mxsw:focus-visible, .mxrow input:focus-visible { outline: 2px solid var(--brass, #d4a64a); outline-offset: 2px; }`;
     document.head.appendChild(css);
     btn = document.createElement("button");
     btn.type = "button"; btn.className = "musicbtn";
-    btn.addEventListener("click", e => { e.stopPropagation(); setMuted(!muted); });
-    document.body.appendChild(btn); paint();
+    btn.setAttribute("aria-haspopup", "dialog"); btn.setAttribute("aria-expanded", "false");
+    panel = document.createElement("div");
+    panel.className = "musicpanel"; panel.hidden = true; panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Music");
+    const row = (k, label) => `<label class="mxrow" for="mx-${k}"><span>${label}<\/span><input type="range" id="mx-${k}" min="0" max="100" step="1" value="${Math.round(mix[k] * 100)}"><\/label>`;
+    panel.innerHTML = `<div class="mxhead"><strong>Music<\/strong><button type="button" id="mx-on" role="switch" class="mxsw" aria-checked="${!muted}"><i><\/i><span>${muted ? "Off" : "On"}<\/span><\/button><\/div>
+      ${row("master", "Volume")}${row("drums", "Drums")}${row("bass", "Bass")}${row("mel", "Melody")}${row("harm", "Harmony")}
+      <p class="mxnote">Only changes the music on this device. Press M to mute.<\/p>`;
+    const open = o => { panel.hidden = !o; btn.setAttribute("aria-expanded", String(o)); };
+    btn.addEventListener("click", e => { e.stopPropagation(); open(panel.hidden); });
+    panel.addEventListener("click", e => { e.stopPropagation(); if (e.target.closest("#mx-on")) setMuted(!muted); });
+    panel.addEventListener("input", e => { const k = e.target.id.replace("mx-", ""); if (k in mix) { setMix(k, e.target.value / 100); if (muted && e.target.value > 0) setMuted(false); } });
+    document.addEventListener("click", e => { if (!panel.hidden && !panel.contains(e.target) && e.target !== btn) open(false); });
+    addEventListener("keydown", e => { if (e.key === "Escape" && !panel.hidden) { open(false); btn.focus(); } });
+    document.body.appendChild(panel); document.body.appendChild(btn); paint();
     // browsers only allow sound after the player touches the page
     const unlock = () => { if (!muted) { init(); ctx && ctx.resume(); } };
     ["pointerdown", "keydown", "touchstart"].forEach(ev => addEventListener(ev, unlock, { capture: true, passive: true }));
@@ -1931,6 +1991,7 @@ window.Soundtrack = (() => {
   // sampler controls: pick any bassline / melody / harmony / key directly
   function sample(o) {
     if (o.loop != null) loop = !!o.loop;
+    if (o.harmRotate != null) harmRotate = !!o.harmRotate;
     if (o.parts) Object.assign(parts, o.parts);
     if (o.key != null) keyLevel = o.key;
     if (o.bass != null) pendingBass = o.bass;
@@ -1939,10 +2000,10 @@ window.Soundtrack = (() => {
       pendingPhrase = { mel: o.mel ?? cur.mel, harm: o.harm ?? cur.harm };
     }
   }
-  function start() { muted = false; init(); if (ctx) { ctx.resume(); master.gain.setValueAtTime(0.5, ctx.currentTime); nextTime = Math.max(nextTime, ctx.currentTime + 0.05); } }
+  function start() { muted = false; init(); if (ctx) { ctx.resume(); master.gain.setValueAtTime(0.6 * curve(mix.master), ctx.currentTime); nextTime = Math.max(nextTime, ctx.currentTime + 0.05); } }
   function stop() { if (ctx) ctx.suspend(); muted = true; }
 
-  return { observe, decision, setMuted, sample, start, stop, patterns: RAW, BPM, get muted() { return muted; },
+  return { observe, decision, setMuted, setMix, mix, sample, start, stop, patterns: RAW, BPM, get muted() { return muted; },
     _state: () => ({ bass, phrase, pendingPhrase, keyLevel, playedKey, step, loop, parts: { ...parts } }) };
 })();
 </script>

@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bangers&family=Caveat+Brush&family=IM+Fell+English:ital@0;1&family=Playfair+Display:ital,wght@0,700;1,700&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 /* Layout: an auction room. A felt table holds the current lot card in the middle, bidder paddles around it, team rosters below. */
 :root {
@@ -231,6 +231,75 @@ canvas.fx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-even
 .confirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; }
 
 @media (prefers-reduced-motion: reduce) { .card.enter, .stamp span { animation: none; } }
+
+/* ---- card styles by kind of character (cardstyle.py) ---- */
+/* cartoon / anime / comics */
+.card[data-tone="0"] { --t1: #ffd6e7; --t2: #ffb3cf; } .card[data-tone="1"] { --t1: #cdf3e1; --t2: #9fe3c4; }
+.card[data-tone="2"] { --t1: #ddd5ff; --t2: #bfb1ff; } .card[data-tone="3"] { --t1: #ffe2c6; --t2: #ffc896; }
+.card[data-tone="4"] { --t1: #cfeaff; --t2: #a3d4ff; } .card[data-tone="5"] { --t1: #fff4b8; --t2: #ffe680; }
+.card[data-cs="toon"] { background: var(--t1); color: #161616; border: 3px solid #111; border-radius: 18px; box-shadow: 6px 6px 0 #111, 0 16px 30px rgba(0,0,0,.35); }
+.card[data-cs="toon"] .art { border-bottom: 3px solid #111; background: radial-gradient(rgba(17,17,17,.16) 1.3px, transparent 1.6px) 0 0 / 9px 9px, var(--t2) !important; }
+.card[data-cs="toon"] .art img { filter: saturate(1.3) contrast(1.08); }
+.card[data-cs="toon"] .art .mono { color: #fff; -webkit-text-stroke: 3px #111; paint-order: stroke fill; text-shadow: 4px 4px 0 #111; }
+.card[data-cs="toon"] .cat { background: #fff; color: #111; border: 2px solid #111; border-radius: 8px; transform: rotate(-4deg); box-shadow: 2px 2px 0 #111; }
+.card[data-cs="toon"] h3 { font-family: "Bangers", var(--display); font-weight: 400; font-size: 32px; letter-spacing: .04em; color: #111; }
+.card[data-cs="toon"] .src { color: #333; font-style: normal; font-weight: 700; }
+.card[data-cs="toon"] .chip { background: #fff; color: #111; border: 2px solid #111; }
+.card[data-cs="toon"] .credit { color: #444; }
+.card[data-cs="toon"] .pricetag { border: 2px solid #111; box-shadow: 2px 2px 0 #111; }
+
+/* long dead: old photograph */
+.card[data-cs="sepia"] { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"), radial-gradient(ellipse at 50% 40%, #f1e3c3 0%, #e4cfa4 70%, #cdb07c 100%); color: #3b2a17; border-radius: 4px; padding: 10px; border: 1px solid #8a6a3f; box-shadow: inset 0 0 0 4px #efe0bf, inset 0 0 0 5px #9c7c4c, 0 14px 30px rgba(0,0,0,.4); }
+.card[data-cs="sepia"] .art { border: 1px solid #5a4024; background: #8a6a3f !important; }
+.card[data-cs="sepia"] .art img { filter: sepia(.9) contrast(1.05) brightness(.96); }
+.card[data-cs="sepia"] .art::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(60,38,16,.5) 100%); }
+.card[data-cs="sepia"] .art .mono { color: #f3e6c8; font-family: "IM Fell English", Georgia, serif; }
+.card[data-cs="sepia"] .cat { z-index: 1; background: #f1e3c3; color: #4a3319; border: 1px solid #5a4024; border-radius: 2px; font-family: "IM Fell English", Georgia, serif; letter-spacing: .1em; }
+.card[data-cs="sepia"] .body { padding: 12px 6px 6px; }
+.card[data-cs="sepia"] h3 { font-family: "IM Fell English", Georgia, serif; font-size: 27px; color: #3b2a17; border-bottom: 1px solid #9c7c4c; padding-bottom: 6px; }
+.card[data-cs="sepia"] .src { color: #6b4f2a; }
+.card[data-cs="sepia"] p { font-family: "IM Fell English", Georgia, serif; font-size: 15px; }
+.card[data-cs="sepia"] .chip { background: transparent; color: #4a3319; border: 1px solid #9c7c4c; }
+.card[data-cs="sepia"] .credit { color: #6b4f2a; }
+
+/* movie stars and singers: red carpet */
+.card[data-cs="star"] { background: repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 2px, transparent 2px 7px), linear-gradient(180deg, #9a1426 0%, #640a17 55%, #3d050d 100%); color: #f6e7c8; border: 2px solid #d4a84a; box-shadow: 0 0 0 4px #3d050d, 0 0 0 5px rgba(212,168,74,.45), 0 16px 34px rgba(0,0,0,.5); }
+.card[data-cs="star"] .art { border-bottom: 2px solid #d4a84a; background: radial-gradient(ellipse at 50% 0%, #fff4d2 0%, #d4a84a 28%, #640a17 75%) !important; }
+.card[data-cs="star"] .art::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 70% 60% at 50% -5%, rgba(255,244,210,.38), transparent 70%),
+    radial-gradient(circle at 12% 82%, rgba(255,255,255,.75) 0 1.5px, transparent 3px), radial-gradient(circle at 88% 70%, rgba(255,255,255,.7) 0 1.5px, transparent 3px),
+    radial-gradient(circle at 80% 18%, rgba(255,255,255,.6) 0 1px, transparent 2.5px), linear-gradient(0deg, rgba(61,5,13,.55), transparent 30%); }
+.card[data-cs="star"] .art .mono { color: #fff4d2; font-family: "Playfair Display", Georgia, serif; font-style: italic; }
+.card[data-cs="star"] .cat { z-index: 1; background: linear-gradient(180deg, #f3d27e, #c8962e); color: #4a0610; border-radius: 999px; }
+.card[data-cs="star"] .cat::before { content: "\2605 "; }
+.card[data-cs="star"] h3 { font-family: "Playfair Display", Georgia, serif; font-style: italic; font-size: 28px; color: #f3d27e; text-shadow: 0 1px 0 #3d050d, 0 0 18px rgba(243,210,126,.35); }
+.card[data-cs="star"] .src { color: #e7c88a; }
+.card[data-cs="star"] .chip { background: transparent; color: #f3d27e; border: 1px solid rgba(243,210,126,.7); }
+.card[data-cs="star"] .credit { color: rgba(246,231,200,.7); }
+
+/* authors and book characters: paint smears */
+.card[data-tone="0"] { --s1: #e07a5f; --s2: #3d5a80; } .card[data-tone="1"] { --s1: #81b29a; --s2: #c0587e; }
+.card[data-tone="2"] { --s1: #f2cc8f; --s2: #4a6fa5; } .card[data-tone="3"] { --s1: #9b72cf; --s2: #e9a23b; }
+.card[data-tone="4"] { --s1: #5fa8d3; --s2: #d1495b; } .card[data-tone="5"] { --s1: #e9c46a; --s2: #2a9d8f; }
+.card[data-cs="paint"] { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"), #fbf6ea; color: #2a2722; border-radius: 6px 14px 8px 16px; }
+.card[data-cs="paint"] .art { background: linear-gradient(135deg, var(--s1), var(--s2)) !important; }
+.card[data-cs="paint"] .art img { filter: saturate(1.15) contrast(1.04); }
+.card[data-cs="paint"] .art::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: -1px; height: 22px; background: #fbf6ea; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 24' preserveAspectRatio='none'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.08' numOctaves='2' seed='7'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='6'/%3E%3C/filter%3E%3Cpath filter='url(%23r)' d='M0 12 C20 6 40 14 60 9 S100 4 120 11 S170 15 190 8 S240 5 260 12 S290 9 300 10 L300 24 L0 24Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 24' preserveAspectRatio='none'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.08' numOctaves='2' seed='7'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='6'/%3E%3C/filter%3E%3Cpath filter='url(%23r)' d='M0 12 C20 6 40 14 60 9 S100 4 120 11 S170 15 190 8 S240 5 260 12 S290 9 300 10 L300 24 L0 24Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat; pointer-events: none; }
+.card[data-cs="paint"] .art .mono { font-family: "Caveat Brush", var(--display); font-size: 80px; }
+.card[data-cs="paint"] .cat { z-index: 1; background: var(--s2); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
+.card[data-cs="paint"] .body { position: relative; isolation: isolate; }
+.card[data-cs="paint"] .body::before, .card[data-cs="paint"] .body::after { content: ""; position: absolute; z-index: -1; pointer-events: none; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 60' preserveAspectRatio='none'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.06 .5' numOctaves='2' seed='4'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='9'/%3E%3C/filter%3E%3Cg filter='url(%23r)'%3E%3Cpath d='M10 32 C40 12 120 16 180 13 S280 9 292 21 C298 31 290 44 268 46 C200 52 120 49 60 52 C28 54 4 46 10 32Z'/%3E%3Cpath d='M30 50 C90 46 170 48 250 44 L250 48 C170 52 90 52 30 54Z' opacity='.6'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100% no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 60' preserveAspectRatio='none'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.06 .5' numOctaves='2' seed='4'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='9'/%3E%3C/filter%3E%3Cg filter='url(%23r)'%3E%3Cpath d='M10 32 C40 12 120 16 180 13 S280 9 292 21 C298 31 290 44 268 46 C200 52 120 49 60 52 C28 54 4 46 10 32Z'/%3E%3Cpath d='M30 50 C90 46 170 48 250 44 L250 48 C170 52 90 52 30 54Z' opacity='.6'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+.card[data-cs="paint"] .body::before { left: 4px; top: 6px; width: min(78%, 280px); height: 50px; background: var(--s1); opacity: .7; transform: rotate(-2deg); }
+.card[data-cs="paint"] .body::after { right: -8px; bottom: 4px; width: 55%; height: 38px; background: var(--s2); opacity: .45; transform: rotate(3deg) scaleX(-1); }
+.card[data-cs="paint"] h3 { font-family: "Caveat Brush", var(--display); font-weight: 400; font-size: 34px; line-height: 1; color: #23201b; }
+.card[data-cs="paint"] .chip { background: color-mix(in srgb, var(--s1) 30%, #fbf6ea); color: #2a2722; border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
+
+/* small team thumbnails echo the style */
+.thumb[data-cs="toon"] { border: 2px solid #111; box-shadow: 2px 2px 0 #111; }
+.thumb[data-cs="sepia"] { border: 1px solid #c8ad7f; } .thumb[data-cs="sepia"] img { filter: sepia(.9); }
+.thumb[data-cs="star"] { border: 2px solid #d4a84a; }
+.thumb[data-cs="paint"] { border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important; }
+@media (prefers-reduced-motion: reduce) { .card[data-cs] { transition: none; } }
 </style>
 
 <div class="wrap" id="app"></div>
@@ -533,16 +602,45 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
   // ---------- views ----------
   const gavelSvg = `<svg class="gavel" viewBox="0 0 64 64" aria-hidden="true"><g fill="var(--brass)"><rect x="18" y="8" width="30" height="14" rx="3" transform="rotate(35 33 15)"/><rect x="29" y="22" width="7" height="34" rx="3" transform="rotate(35 32 39)" opacity=".85"/><rect x="6" y="54" width="30" height="6" rx="2" opacity=".6"/></g></svg>`;
 
+  // ---------- card style by kind of character (cardstyle.py) ----------
+  const CS_STAR = new Set(["musician", "musicians", "actor", "actress", "actress/inventor", "comedian", "director", "singer", "rapper", "band"]);
+  const CS_AUTHOR = new Set(["writer", "playwright", "folklorists", "poet", "novelist", "author"]);
+  const CS_AUTHOR_IDS = new Set(["sappho", "omar-khayyam", "rumi"]);
+  function csDeathYear(c) {
+    const o = String(c.origin || "").trim();
+    if (!o || /^born/i.test(o)) return null;
+    const parts = o.split(/\s[\u2013-]\s/);
+    const last = parts[parts.length - 1];
+    const m = last.match(/\d{3,4}/) || last.match(/\d+/);
+    if (/\bBC\b/.test(last)) return m ? -Number(m[0]) : -1000;
+    return m ? Number(m[0]) : -1000;
+  }
+  function cardStyle(c) {
+    if (!c) return "";
+    if (c.card_style) return c.card_style === "plain" ? "" : c.card_style;
+    const cat = String(c.category || "").toLowerCase(), grp = String(c.group || c.filter || "").toLowerCase(), src = String(c.source || "").toLowerCase();
+    if (grp === "fiction") {
+      if (/cartoon|anime|comic|manga/.test(cat)) return "toon";
+      if (/literature|book|novel/.test(cat)) return "paint";
+      return "";
+    }
+    if (CS_STAR.has(src)) return "star";
+    if (CS_AUTHOR.has(src) || CS_AUTHOR_IDS.has(c.id)) return "paint";
+    if (grp === "history") { const y = csDeathYear(c); if (y !== null && y <= 1950) return "sepia"; }
+    return "";
+  }
+  function csTone(c) { let h = 0; for (const ch of String(c && c.id || "")) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % 6; }
+
   function art(c, big) {
     const bg = catColor(c.category);
     const src = c.image || imgCache[c.id];
     const img = src ? `<img src="${esc(src)}" alt="${esc(c.name)}" loading="lazy" onerror="this.remove()">` : "";
     return big
       ? `<div class="art" style="background:${bg}"><span class="mono">${esc(initials(c.name))}</span>${img ? `<div style="position:absolute;inset:0">${img}</div>` : ""}${c.category ? `<span class="cat">${esc(c.category)}</span>` : ""}</div>`
-      : `<div class="thumb" style="background:${bg}">${img || esc(initials(c.name))}</div>`;
+      : `<div class="thumb" data-cs="${cardStyle(c)}" style="background:${bg}">${img || esc(initials(c.name))}</div>`;
   }
   function charCard(c, extra = "") {
-    return `<article class="card enter">
+    return `<article class="card enter" data-cs="${cardStyle(c)}" data-tone="${csTone(c)}">
       ${art(c, true)}
       <div class="body">
         <h3>${esc(c.name)}</h3>

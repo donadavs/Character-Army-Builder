@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bangers&family=Caveat+Brush&family=IM+Fell+English:ital@0;1&family=Playfair+Display:ital,wght@0,700;1,700&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bangers&family=Press+Start+2P&family=Bebas+Neue&family=Caveat+Brush&family=IM+Fell+English:ital@0;1&family=Playfair+Display:ital,wght@0,700;1,700&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 /* Layout: an auction room. A felt table holds the current lot card in the middle, bidder paddles around it, team rosters below. */
 :root {
@@ -298,21 +298,22 @@ canvas.fx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-even
 .card[data-tone="0"] { --b1: #5b1a1a; --b2: #8a2c2c; } .card[data-tone="1"] { --b1: #1d3b2a; --b2: #2f5e43; }
 .card[data-tone="2"] { --b1: #1f2b4d; --b2: #33467a; } .card[data-tone="3"] { --b1: #4a2a12; --b2: #7a4a22; }
 .card[data-tone="4"] { --b1: #3a1f45; --b2: #5e3570; } .card[data-tone="5"] { --b1: #24343a; --b2: #3f5862; }
-.card[data-cs="book"] { position: relative; padding: 0 9px 7px 24px; border-radius: 4px 10px 10px 4px; color: #2a2620;
-  background: linear-gradient(90deg, var(--b1) 0, var(--b2) 45%, var(--b1) 90%, rgba(0,0,0,.35) 100%) left / 24px 100% no-repeat,
-    repeating-linear-gradient(90deg, #fffaf0 0 1px, #cdbf9f 1px 2px) right / 9px 100% no-repeat,
-    repeating-linear-gradient(180deg, #fffaf0 0 1px, #cdbf9f 1px 2px) bottom / 100% 7px no-repeat,
-    #f7f0df;
-  box-shadow: 0 14px 30px rgba(0,0,0,.4), 0 0 0 1px rgba(0,0,0,.35); }
-.card[data-cs="book"]::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 24px; pointer-events: none;
-  background: linear-gradient(#d4a84a, #d4a84a) 0 18px / 100% 2px no-repeat, linear-gradient(#d4a84a, #d4a84a) 0 24px / 100% 1px no-repeat,
-    linear-gradient(#d4a84a, #d4a84a) 0 calc(100% - 18px) / 100% 2px no-repeat, linear-gradient(#d4a84a, #d4a84a) 0 calc(100% - 24px) / 100% 1px no-repeat,
-    linear-gradient(90deg, rgba(255,255,255,.18), transparent 40%); }
+/* open book seen from slightly above: right-hand page, spine fold on the left, page block curving down from the spine at the bottom and angled on the right */
+.card[data-cs="book"] { position: relative; padding: 0 22px 28px 20px; border-radius: 2px 4px 2px 2px; color: #2a2620;
+  transform: perspective(1100px) rotateX(15deg); transform-origin: 50% 100%;
+  background:
+    linear-gradient(90deg, #efe6cf 0, #e2d5b5 4px, #c4b38c 8px, #8c7a55 11px, #3a2e1e 13.5px, #241b10 15px) left top / 15px calc(100% - 22px) no-repeat, repeating-linear-gradient(90deg, transparent 0 2px, rgba(120,100,60,.35) 2px 2.6px) left top / 8px calc(100% - 22px) no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 28' preserveAspectRatio='none'%3E%3Cpath d='M0 3C20 16 40 28 80 28L300 28L300 18L0 18Z' fill='%23231c14'/%3E%3Cpath d='M0 0L300 0L300 6L62 6C30 6 14 3 0 1Z' fill='%23f3ead6'/%3E%3Cpath d='M0.0 1.0C14.0 3.0 30.0 6.0 62.0 6.0L300.0 6.0L300 22L76.0 22.0C38.0 22.0 18.0 14.0 0.0 5.0Z' fill='%23ddd0b2'/%3E%3Cg fill='none' stroke='%23bfae86' stroke-width='.7' vector-effect='non-scaling-stroke'%3E%3Cpath d='M0.0 1.4C14.4 4.2 30.9 7.8 63.6 7.8L300.0 7.8'/%3E%3Cpath d='M0.0 1.9C14.9 5.4 31.8 9.6 65.1 9.6L300.0 9.6'/%3E%3Cpath d='M0.0 2.3C15.3 6.7 32.7 11.3 66.7 11.3L300.0 11.3'/%3E%3Cpath d='M0.0 2.8C15.8 7.9 33.6 13.1 68.2 13.1L300.0 13.1'/%3E%3Cpath d='M0.0 3.2C16.2 9.1 34.4 14.9 69.8 14.9L300.0 14.9'/%3E%3Cpath d='M0.0 3.7C16.7 10.3 35.3 16.7 71.3 16.7L300.0 16.7'/%3E%3Cpath d='M0.0 4.1C17.1 11.6 36.2 18.4 72.9 18.4L300.0 18.4'/%3E%3Cpath d='M0.0 4.6C17.6 12.8 37.1 20.2 74.4 20.2L300.0 20.2'/%3E%3C/g%3E%3Cpath d='M0.0 1.0C14.0 3.0 30.0 6.0 62.0 6.0L300.0 6.0' fill='none' stroke='%23a8966e' stroke-width='1' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") left 15px bottom 0 / calc(100% - 15px) 28px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 100' preserveAspectRatio='none'%3E%3Cpath d='M8.5 0L22 100L13 100L4 0Z' fill='%23231c14'/%3E%3Cpath d='M0 0L8.5 0L17.5 100L0 100Z' fill='%23ddd0b2'/%3E%3Cg fill='none' stroke='%23bfae86' stroke-width='.7' vector-effect='non-scaling-stroke'%3E%3Cpath d='M0.85 0L1.75 100'/%3E%3Cpath d='M1.70 0L3.50 100'/%3E%3Cpath d='M2.55 0L5.25 100'/%3E%3Cpath d='M3.40 0L7.00 100'/%3E%3Cpath d='M4.25 0L8.75 100'/%3E%3Cpath d='M5.10 0L10.50 100'/%3E%3Cpath d='M5.95 0L12.25 100'/%3E%3Cpath d='M6.80 0L14.00 100'/%3E%3Cpath d='M7.65 0L15.75 100'/%3E%3C/g%3E%3Cpath d='M0 0L0 100' stroke='%23a8966e' stroke-width='1.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") right 0 top 0 / 22px calc(100% - 22px) no-repeat,
+    linear-gradient(90deg, #f7f0df 0, #fbf6ea 60%, #f1e8d2 100%) left 15px top 0 / calc(100% - 37px) calc(100% - 27px) no-repeat;
+  box-shadow: 0 18px 26px rgba(0,0,0,.45), -3px 0 0 #231c14; }
+.card[data-cs="book"].enter { animation-name: csdealbook; }
+@keyframes csdealbook { from { transform: perspective(1100px) translateY(-14px) rotateX(15deg) rotate(-2deg); opacity: .2; } to { transform: perspective(1100px) rotateX(15deg); opacity: 1; } }
 .card[data-cs="book"] .art { border-bottom: 1px solid #cdbf9f; background: linear-gradient(135deg, var(--b2), var(--b1)) !important; }
-.card[data-cs="book"] .art::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 26px; pointer-events: none; background: linear-gradient(90deg, rgba(0,0,0,.35), transparent); }
-.card[data-cs="book"] .body { background: linear-gradient(90deg, rgba(90,70,40,.16), transparent 22px); }
+.card[data-cs="book"]::after { content: ""; position: absolute; left: 15px; top: 0; bottom: 26px; width: 34px; z-index: 2; pointer-events: none; background: linear-gradient(90deg, rgba(40,25,10,.5), rgba(40,25,10,.18) 30%, rgba(40,25,10,.05) 65%, transparent); }
+.card[data-cs="book"] .body { padding-left: 22px; }
 .card[data-cs="book"] .art .mono { font-family: "Playfair Display", Georgia, serif; }
-.card[data-cs="book"] .cat { z-index: 1; left: 32px; background: var(--b1); color: #f3d27e; border: 1px solid #d4a84a; border-radius: 2px; }
+.card[data-cs="book"] .cat { z-index: 1; left: 22px; background: var(--b1); color: #f3d27e; border: 1px solid #d4a84a; border-radius: 2px; }
 .card[data-cs="book"] h3 { font-family: "Playfair Display", Georgia, serif; font-size: 26px; color: var(--b1); }
 .card[data-cs="book"] .src { color: #6a5d48; }
 .card[data-cs="book"] p { font-family: "IM Fell English", Georgia, serif; font-size: 15px; }
@@ -322,9 +323,10 @@ canvas.fx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-even
 
 /* mythology and folklore: parchment scroll */
 .card[data-cs="scroll"] { position: relative; overflow: visible; padding: 20px 12px; color: #3b2a17; border-radius: 0; box-shadow: none;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E") center / calc(100% - 24px) calc(100% - 26px) no-repeat,
-    radial-gradient(ellipse at 50% 50%, #f4e6c4 0%, #e8d3a2 75%, #d6b97c 100%) center / calc(100% - 24px) calc(100% - 26px) no-repeat;
-  filter: drop-shadow(0 12px 18px rgba(0,0,0,.45)); }
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E") center / calc(100% - 12px) calc(100% - 26px) no-repeat,
+    radial-gradient(ellipse at 50% 50%, #f4e6c4 0%, #e8d3a2 72%, #c9a86a 100%) center / calc(100% - 12px) calc(100% - 26px) no-repeat;
+  -webkit-mask: linear-gradient(#000, #000) top / 100% 26px no-repeat, linear-gradient(#000, #000) bottom / 100% 26px no-repeat, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 400' preserveAspectRatio='none'%3E%3Cfilter id='f' x='-5%25' y='-5%25' width='110%25' height='110%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.02 .09' numOctaves='3' seed='11'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='16'/%3E%3C/filter%3E%3Crect x='9' y='-20' width='282' height='440' filter='url(%23f)'/%3E%3Cpath d='M9 60l7 3-7 3zM291 140l-8 2 8 4zM9 230l9 2-9 5zM291 300l-7 3 7 2zM9 340l6 2-6 3z' fill='%23fff' fill-opacity='0'/%3E%3C/svg%3E") center / calc(100% - 12px) calc(100% - 30px) no-repeat;
+  mask: linear-gradient(#000, #000) top / 100% 26px no-repeat, linear-gradient(#000, #000) bottom / 100% 26px no-repeat, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 400' preserveAspectRatio='none'%3E%3Cfilter id='f' x='-5%25' y='-5%25' width='110%25' height='110%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.02 .09' numOctaves='3' seed='11'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='16'/%3E%3C/filter%3E%3Crect x='9' y='-20' width='282' height='440' filter='url(%23f)'/%3E%3Cpath d='M9 60l7 3-7 3zM291 140l-8 2 8 4zM9 230l9 2-9 5zM291 300l-7 3 7 2zM9 340l6 2-6 3z' fill='%23fff' fill-opacity='0'/%3E%3C/svg%3E") center / calc(100% - 12px) calc(100% - 30px) no-repeat; }
 .card[data-cs="scroll"]::before, .card[data-cs="scroll"]::after { content: ""; position: absolute; left: 0; right: 0; height: 24px; border-radius: 12px; pointer-events: none;
   background: linear-gradient(180deg, #b8935a 0%, #f1dfb4 30%, #d9bd84 55%, #8f6a36 100%);
   box-shadow: inset 14px 0 0 -4px #6b4a22, inset -14px 0 0 -4px #6b4a22, 0 2px 4px rgba(0,0,0,.3); }
@@ -353,6 +355,114 @@ canvas.fx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-even
 .card[data-cs="film"] .credit { color: #8a8478; }
 .card[data-cs="film"] .pricetag { right: 34px; }
 
+/* video game characters: pretty pixels */
+.card[data-tone="0"] { --p1: #ff5fa2; --p2: #7c4dff; } .card[data-tone="1"] { --p1: #33e1ff; --p2: #3d5afe; }
+.card[data-tone="2"] { --p1: #b6ff3b; --p2: #00b884; } .card[data-tone="3"] { --p1: #ffb03b; --p2: #ff3d6e; }
+.card[data-tone="4"] { --p1: #c77dff; --p2: #ff5fa2; } .card[data-tone="5"] { --p1: #ffe14d; --p2: #ff7a3d; }
+.card[data-cs="pixel"] { background: #1a1033; color: #efe9ff; border-radius: 0; box-shadow: none; padding: 6px;
+  clip-path: polygon(0 12px, 6px 12px, 6px 6px, 12px 6px, 12px 0, calc(100% - 12px) 0, calc(100% - 12px) 6px, calc(100% - 6px) 6px, calc(100% - 6px) 12px, 100% 12px, 100% calc(100% - 12px), calc(100% - 6px) calc(100% - 12px), calc(100% - 6px) calc(100% - 6px), calc(100% - 12px) calc(100% - 6px), calc(100% - 12px) 100%, 12px 100%, 12px calc(100% - 6px), 6px calc(100% - 6px), 6px calc(100% - 12px), 0 calc(100% - 12px));
+  background: linear-gradient(135deg, var(--p1), var(--p2)) border-box; }
+.card[data-cs="pixel"] .art { background: repeating-conic-gradient(var(--p2) 0 25%, var(--p1) 0 50%) 0 0 / 16px 16px !important; border: 4px solid #1a1033; }
+.card[data-cs="pixel"] .art img { image-rendering: pixelated; filter: saturate(1.35) contrast(1.1); }
+.card[data-cs="pixel"] .art::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0,0,0,.08) 0 1px, transparent 1px 4px); }
+.card[data-cs="pixel"] .art .mono { font-family: "Press Start 2P", monospace; font-size: 40px; text-shadow: 4px 4px 0 #1a1033; }
+.card[data-cs="pixel"] .cat { z-index: 1; font-family: "Press Start 2P", monospace; font-size: 8px; letter-spacing: 0; background: #1a1033; color: var(--p1); border-radius: 0; box-shadow: 0 0 0 2px var(--p1); padding: 5px 7px; }
+.card[data-cs="pixel"] .body { background: #1a1033; position: relative; padding-top: 30px; }
+.card[data-cs="pixel"] .body::before { content: "\2665\2665\2665"; position: absolute; left: 16px; top: 10px; color: #ff4d6d; font-size: 15px; letter-spacing: 3px; line-height: 1; }
+.card[data-cs="pixel"] .body::after { content: "1UP"; position: absolute; right: 14px; top: 11px; font-family: "Press Start 2P", monospace; font-size: 9px; color: var(--p1); animation: csblink 1.2s steps(1) infinite; }
+@keyframes csblink { 50% { opacity: 0; } }
+.card[data-cs="pixel"] h3 { font-family: "Press Start 2P", monospace; font-size: 16px; line-height: 1.4; color: #fff; text-shadow: 3px 3px 0 var(--p2); }
+.card[data-cs="pixel"] .src { color: var(--p1); font-style: normal; font-family: "Press Start 2P", monospace; font-size: 8px; line-height: 1.6; }
+.card[data-cs="pixel"] .chip { background: transparent; color: var(--p1); border: 2px solid var(--p1); border-radius: 0; }
+.card[data-cs="pixel"] .credit { color: #9d93c0; }
+.card[data-cs="pixel"] .pricetag { border-radius: 0; font-family: "Press Start 2P", monospace; font-size: 10px; }
+
+/* athletes: trophy night under stadium lights */
+.card[data-cs="sport"] { background: radial-gradient(ellipse 90% 40% at 50% 0%, rgba(255,255,255,.12), transparent 70%), linear-gradient(180deg, #13294b 0%, #0c1b33 100%); color: #e8eef8; border: 2px solid #c9a227; box-shadow: 0 0 0 4px #0c1b33, 0 16px 34px rgba(0,0,0,.5); }
+.card[data-cs="sport"] .art { border-bottom: 4px solid #c9a227; background: repeating-linear-gradient(90deg, #2e7d32 0 24px, #388e3c 24px 48px) !important; }
+.card[data-cs="sport"] .art::after { content: attr(data-ball); position: absolute; right: 10px; bottom: 8px; font-size: 30px; line-height: 1; filter: drop-shadow(0 3px 3px rgba(0,0,0,.5)); pointer-events: none; }
+.card[data-cs="sport"] .art .mono { font-family: "Bebas Neue", var(--display); font-size: 80px; }
+.card[data-cs="sport"] .cat { z-index: 1; background: #c9a227; color: #0c1b33; border-radius: 3px; }
+.card[data-cs="sport"] .body { position: relative; padding-right: 66px; min-height: 120px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%23a8781e'/%3E%3Cstop offset='.45' stop-color='%23ffe08a'/%3E%3Cstop offset='1' stop-color='%23b8862a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='url(%23g)'%3E%3Cpath d='M18 6h28v14c0 9-6 16-14 16S18 29 18 20z'/%3E%3Cpath d='M18 10H8c0 10 5 16 12 17l1-4c-5-1-8-5-8-9h5zM46 10h10c0 10-5 16-12 17l-1-4c5-1 8-5 8-9h-5z'/%3E%3Crect x='29' y='35' width='6' height='9'/%3E%3Cpath d='M22 44h20l3 8H19z'/%3E%3Crect x='15' y='52' width='34' height='7' rx='1'/%3E%3C/g%3E%3C/svg%3E") right 10px bottom 10px / 52px 52px no-repeat, repeating-linear-gradient(90deg, transparent 0 39px, rgba(255,255,255,.04) 39px 40px); }
+.card[data-cs="sport"] h3 { font-family: "Bebas Neue", var(--display); font-weight: 400; font-size: 36px; line-height: .95; letter-spacing: .02em; color: #fff; text-transform: uppercase; }
+.card[data-cs="sport"] .src { font-style: normal; font-weight: 700; color: #c9a227; letter-spacing: .08em; text-transform: uppercase; }
+.card[data-cs="sport"] .chip { background: #1d3a66; color: #e8eef8; }
+.card[data-cs="sport"] .credit { color: #8a9bb8; }
+
+/* TV characters and TV personalities: retro television */
+.card[data-cs="tv"] { position: relative; padding: 28px 12px 12px; color: #f1e6d4; border-radius: 22px;
+  background: linear-gradient(60deg, transparent calc(50% - 1.5px), #2a2a2a calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px)) calc(50% - 22px) 0 / 44px 26px no-repeat,
+    linear-gradient(-60deg, transparent calc(50% - 1.5px), #2a2a2a calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px)) calc(50% + 22px) 0 / 44px 26px no-repeat,
+    radial-gradient(circle at 50% 24px, #2a2a2a 0 6px, transparent 6.5px),
+    repeating-linear-gradient(92deg, rgba(0,0,0,.08) 0 3px, transparent 3px 11px), linear-gradient(180deg, #8a5a33 0%, #6b4226 60%, #4e2f1a 100%);
+  box-shadow: inset 0 0 0 3px rgba(0,0,0,.25), 0 16px 32px rgba(0,0,0,.5); }
+.card[data-cs="tv"] .art { border-radius: 26px / 20px; border: 7px solid #1b1b1b; box-shadow: 0 0 0 2px #b08d5e, 0 0 18px rgba(140,200,255,.25); background: #20262b !important; }
+.card[data-cs="tv"] .art img { filter: saturate(1.1) contrast(1.05) brightness(1.03); }
+.card[data-cs="tv"] .art::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 20px / 14px;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px), radial-gradient(ellipse at 35% 25%, rgba(255,255,255,.22), transparent 45%), radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,.55) 100%); }
+.card[data-cs="tv"] .cat { z-index: 1; left: 18px; top: 16px; background: #c62828; color: #fff; border-radius: 3px; }
+.card[data-cs="tv"] .cat::before { content: "\25CF  "; color: #ffcdd2; }
+.card[data-cs="tv"] .body { position: relative; margin-top: 10px; padding-right: 54px; background: #2b1d14; border-radius: 10px; box-shadow: inset 0 2px 6px rgba(0,0,0,.5); }
+.card[data-cs="tv"] .body::after { content: ""; position: absolute; right: 12px; top: 14px; width: 30px; height: 68px; pointer-events: none;
+  background: radial-gradient(circle at 15px 15px, #d9c29a 0 4px, #3a3a3a 4.5px 12px, transparent 12.5px), radial-gradient(circle at 15px 50px, #d9c29a 0 4px, #3a3a3a 4.5px 12px, transparent 12.5px); }
+.card[data-cs="tv"] h3 { color: #ffe9b8; text-shadow: 0 0 10px rgba(255,200,120,.35); }
+.card[data-cs="tv"] .src { color: #d2b48c; }
+.card[data-cs="tv"] .chip { background: #3d2b1f; color: #f1e6d4; }
+.card[data-cs="tv"] .credit { color: #a88d6a; }
+
+/* modern politicians and activists: flag colours */
+.card[data-flag="us"] { --f1: #b22234; --f2: #ffffff; --f3: #3c3b6e; } .card[data-flag="uk"] { --f1: #c8102e; --f2: #ffffff; --f3: #012169; }
+.card[data-flag="de"] { --f1: #000000; --f2: #dd0000; --f3: #ffce00; } .card[data-flag="ca"] { --f1: #d80621; --f2: #ffffff; --f3: #d80621; }
+.card[data-flag="kp"] { --f1: #024fa2; --f2: #ffffff; --f3: #ed1c27; } .card[data-flag="ru"] { --f1: #ffffff; --f2: #0039a6; --f3: #d52b1e; }
+.card[data-flag="ua"] { --f1: #0057b7; --f2: #ffd700; --f3: #0057b7; } .card[data-flag="fr"] { --f1: #0055a4; --f2: #ffffff; --f3: #ef4135; }
+.card[data-flag="za"] { --f1: #007749; --f2: #ffb81c; --f3: #de3831; } .card[data-flag="su"] { --f1: #cc0000; --f2: #ffd700; --f3: #cc0000; }
+.card[data-flag="cn"] { --f1: #de2910; --f2: #ffde00; --f3: #de2910; } .card[data-flag="cu"] { --f1: #002a8f; --f2: #ffffff; --f3: #cf142b; }
+.card[data-flag="kh"] { --f1: #032ea1; --f2: #ffffff; --f3: #e00025; } .card[data-flag="ug"] { --f1: #000000; --f2: #fcdc04; --f3: #d90000; }
+.card[data-flag="iq"] { --f1: #ce1126; --f2: #ffffff; --f3: #000000; } .card[data-flag="ly"] { --f1: #e70013; --f2: #000000; --f3: #239e46; }
+.card[data-flag="pk"] { --f1: #01411c; --f2: #ffffff; --f3: #01411c; } .card[data-flag="se"] { --f1: #006aa7; --f2: #fecc00; --f3: #006aa7; }
+.card[data-flag="in"] { --f1: #ff9933; --f2: #ffffff; --f3: #138808; } .card[data-flag="it"] { --f1: #009246; --f2: #ffffff; --f3: #ce2b37; }
+.card[data-flag="mx"] { --f1: #006847; --f2: #ffffff; --f3: #ce1126; } .card[data-flag="jp"] { --f1: #bc002d; --f2: #ffffff; --f3: #bc002d; }
+.card[data-cs="flag"] { padding: 9px; color: #1f2430; border-radius: 6px;
+  background: repeating-linear-gradient(-45deg, var(--f1) 0 12px, var(--f2) 12px 24px, var(--f3) 24px 36px); box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 14px 30px rgba(0,0,0,.45); }
+.card[data-cs="flag"] .art { border-radius: 3px 3px 0 0; }
+.card[data-cs="flag"] .art::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 18px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, var(--f1) 0 26px, var(--f2) 26px 52px, var(--f3) 52px 78px);
+  -webkit-mask: radial-gradient(circle at 13px 0, #000 12px, transparent 12.5px) 0 0 / 26px 18px repeat-x; mask: radial-gradient(circle at 13px 0, #000 12px, transparent 12.5px) 0 0 / 26px 18px repeat-x; filter: drop-shadow(0 2px 1px rgba(0,0,0,.3)); }
+.card[data-cs="flag"] .cat { z-index: 1; top: 24px; background: var(--f3); color: #fff; border: 1px solid #fff; }
+.card[data-cs="flag"] .body { background: #fbfaf6; border-radius: 0 0 3px 3px; }
+.card[data-cs="flag"] h3 { font-family: "Playfair Display", Georgia, serif; font-size: 26px; color: #1f2430; }
+.card[data-cs="flag"] h3::after { content: "\2605 \2605 \2605"; display: block; font-size: 11px; letter-spacing: 4px; color: var(--f1); margin-top: 4px; -webkit-text-stroke: .5px rgba(0,0,0,.35); }
+.card[data-cs="flag"] .chip { background: #eef0f4; color: #1f2430; }
+
+/* modern explorers: folded topographic map */
+.card[data-cs="map"] { color: #2e2a1f; border-radius: 4px;
+  background: linear-gradient(90deg, transparent calc(33.3% - 1px), rgba(0,0,0,.09) calc(33.3% - 1px), rgba(255,255,255,.4) calc(33.3% + 1px), transparent calc(33.3% + 2px), transparent calc(66.6% - 1px), rgba(0,0,0,.09) calc(66.6% - 1px), rgba(255,255,255,.4) calc(66.6% + 1px), transparent calc(66.6% + 2px)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' stroke='%2391a87c' stroke-width='1' opacity='.55'%3E%3Cpath d='M30 60c20-30 70-35 95-15s30 60 0 75-80 10-95-15-10-30 0-45z'/%3E%3Cpath d='M48 66c15-18 50-22 68-8s20 40 0 50-55 6-66-10-8-20-2-32z'/%3E%3Cpath d='M66 72c10-10 30-12 40-4s10 22 0 28-30 4-38-6-6-12-2-18z'/%3E%3Cpath d='M140 150c25-20 70-10 75 15s-30 50-60 45-40-40-15-60z'/%3E%3Cpath d='M155 160c15-10 40-5 43 10s-18 28-35 25-23-24-8-35z'/%3E%3Cpath d='M-10 190c40-20 80 0 110 15M0 130c30 10 40 40 30 70'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 220px 220px, linear-gradient(160deg, #eef0dc, #e3e6c6); box-shadow: 0 0 0 1px #9aa580, 0 14px 30px rgba(0,0,0,.4); }
+.card[data-cs="map"] .art { border-bottom: 3px dashed #b0392b; background: #7fa7a0 !important; }
+.card[data-cs="map"] .art img { filter: saturate(.95) contrast(1.03); }
+.card[data-cs="map"] .cat { z-index: 1; background: #2f5d50; color: #eef0dc; border-radius: 2px; }
+.card[data-cs="map"] .body { position: relative; padding-right: 70px; min-height: 120px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='27' fill='none' stroke='%237a5c2e' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%237a5c2e' stroke-width='.8' stroke-dasharray='2 3'/%3E%3Cpath d='M32 4l5 28h-10z' fill='%23b0392b'/%3E%3Cpath d='M32 60l-5-28h10z' fill='%237a5c2e'/%3E%3Cpath d='M4 32l28-4v8zM60 32l-28 4v-8z' fill='%23a08050'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%23f2ecd6' stroke='%237a5c2e'/%3E%3C/svg%3E") right 10px bottom 10px / 54px 54px no-repeat; }
+.card[data-cs="map"] h3 { font-family: "Bebas Neue", var(--display); font-weight: 400; font-size: 34px; letter-spacing: .04em; line-height: .95; color: #2f5d50; }
+.card[data-cs="map"] h3::before { content: "\2691  "; color: #b0392b; font-size: 22px; vertical-align: 4px; }
+.card[data-cs="map"] .src { color: #6a6a4a; font-style: normal; font-family: var(--mono); font-size: 11px; }
+.card[data-cs="map"] .chip { background: rgba(47,93,80,.12); color: #2f5d50; border: 1px dashed #2f5d50; }
+.card[data-cs="map"] .credit { color: #6a6a4a; }
+
+/* modern scientists: lab with test tubes */
+.card[data-cs="lab"] { color: #1d2b33; border-radius: 12px; border: 2px solid #b0bec5;
+  background: linear-gradient(#fff 0 0) padding-box, #b0bec5; box-shadow: 0 14px 30px rgba(0,0,0,.4); }
+.card[data-cs="lab"] .art { border-bottom: 2px solid #b0bec5; background: linear-gradient(135deg, #b2ebf2, #c5cae9) !important; }
+.card[data-cs="lab"] .art::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(178,235,242,.0) 70%, rgba(64,196,255,.25)); }
+.card[data-cs="lab"] .cat { z-index: 1; background: #fff; color: #00796b; border: 2px solid #00796b; border-radius: 4px; font-family: var(--mono); }
+.card[data-cs="lab"] .body { position: relative; padding-right: 92px; min-height: 130px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 70'%3E%3Crect x='2' y='56' width='86' height='6' rx='2' fill='%2390a4ae'/%3E%3Crect x='6' y='50' width='78' height='4' rx='1' fill='%23b0bec5'/%3E%3Cg stroke='%2337474f' stroke-width='1.5' fill='rgba(255,255,255,.55)'%3E%3Cpath d='M14 6h12v42a6 6 0 0 1-12 0z'/%3E%3Cpath d='M39 2h12v46a6 6 0 0 1-12 0z'/%3E%3Cpath d='M64 10h12v38a6 6 0 0 1-12 0z'/%3E%3C/g%3E%3Cpath d='M15 28h10v20a5 5 0 0 1-10 0z' fill='%2366e08a'/%3E%3Cpath d='M40 20h10v28a5 5 0 0 1-10 0z' fill='%2340c4ff'/%3E%3Cpath d='M65 34h10v14a5 5 0 0 1-10 0z' fill='%23ff6fb1'/%3E%3Cg fill='%23fff' opacity='.8'%3E%3Ccircle cx='19' cy='38' r='1.6'/%3E%3Ccircle cx='22' cy='32' r='1'/%3E%3Ccircle cx='44' cy='30' r='1.5'/%3E%3Ccircle cx='47' cy='40' r='1'/%3E%3Ccircle cx='69' cy='42' r='1.3'/%3E%3C/g%3E%3Cg fill='%2340c4ff' opacity='.6'%3E%3Ccircle cx='46' cy='-1' r='2'/%3E%3C/g%3E%3C/svg%3E") right 8px bottom 8px / 80px 62px no-repeat, linear-gradient(90deg, rgba(120,160,180,.14) 1px, transparent 1px) 0 0 / 22px 22px, linear-gradient(0deg, rgba(120,160,180,.14) 1px, transparent 1px) 0 0 / 22px 22px, #f5fbfc; }
+.card[data-cs="lab"] h3 { font-family: var(--mono); font-weight: 600; font-size: 22px; color: #00695c; letter-spacing: -.01em; }
+.card[data-cs="lab"] .src { color: #546e7a; font-style: normal; font-family: var(--mono); font-size: 11px; }
+.card[data-cs="lab"] .chip { background: #e0f2f1; color: #00695c; }
+.card[data-cs="lab"] .credit { color: #78909c; }
+
 /* small team thumbnails echo the style */
 .thumb[data-cs="toon"] { border: 2px solid #111; box-shadow: 2px 2px 0 #111; }
 .thumb[data-cs="sepia"] { border: 1px solid #c8ad7f; } .thumb[data-cs="sepia"] img { filter: sepia(.9); }
@@ -360,6 +470,10 @@ canvas.fx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-even
 .thumb[data-cs="book"] { border-left: 5px solid #5b1a1a; border-radius: 2px 6px 6px 2px !important; }
 .thumb[data-cs="scroll"] { border-top: 3px solid #b8935a; border-bottom: 3px solid #b8935a; } .thumb[data-cs="scroll"] img { filter: sepia(.35); }
 .thumb[data-cs="film"] { border: 3px dashed #121212; outline: 2px solid #121212; }
+.thumb[data-cs="pixel"] { border: 3px solid #7c4dff; border-radius: 0 !important; } .thumb[data-cs="pixel"] img { image-rendering: pixelated; }
+.thumb[data-cs="sport"] { border: 2px solid #c9a227; border-radius: 50% !important; }
+.thumb[data-cs="tv"] { border: 3px solid #6b4226; border-radius: 10px / 8px !important; }
+.thumb[data-cs="flag"] { border: 3px solid #3c3b6e; } .thumb[data-cs="map"] { border: 2px dashed #b0392b; } .thumb[data-cs="lab"] { border: 2px solid #00796b; }
 .thumb[data-cs="paint"] { border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important; }
 @media (prefers-reduced-motion: reduce) { .card[data-cs] { transition: none; } }
 </style>
@@ -665,32 +779,73 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
   const gavelSvg = `<svg class="gavel" viewBox="0 0 64 64" aria-hidden="true"><g fill="var(--brass)"><rect x="18" y="8" width="30" height="14" rx="3" transform="rotate(35 33 15)"/><rect x="29" y="22" width="7" height="34" rx="3" transform="rotate(35 32 39)" opacity=".85"/><rect x="6" y="54" width="30" height="6" rx="2" opacity=".6"/></g></svg>`;
 
   // ---------- card style by kind of character (cardstyle.py) ----------
-  const CS_STAR = new Set(["musician", "musicians", "actor", "actress", "actress/inventor", "comedian", "director", "singer", "rapper", "band"]);
+  const CS_STAR = new Set(["musician", "musicians", "actor", "actress", "actress/inventor", "comedian", "director", "singer", "rapper", "band", "magician", "showman"]);
   const CS_AUTHOR = new Set(["writer", "playwright", "folklorists", "poet", "novelist", "author"]);
   const CS_AUTHOR_IDS = new Set(["sappho", "omar-khayyam", "rumi"]);
+  const CS_SPORT = { "basketball": "\u{1F3C0}", "football": "\u26BD", "american football": "\u{1F3C8}", "baseball": "\u26BE", "tennis": "\u{1F3BE}", "golf": "\u26F3",
+    "hockey": "\u{1F3D2}", "boxer": "\u{1F94A}", "boxing": "\u{1F94A}", "mma": "\u{1F94A}", "wrestling": "\u{1F93C}", "martial artist": "\u{1F94B}", "athletics": "\u{1F3C5}", "athlete": "\u{1F3C5}",
+    "gymnastics": "\u{1F938}", "swimming": "\u{1F3CA}", "cycling": "\u{1F6B4}", "chess": "\u265F", "snooker": "\u{1F3B1}", "skateboarding": "\u{1F6F9}", "snowboarding": "\u{1F3C2}",
+    "surfing": "\u{1F3C4}", "ski jumping": "\u26F7", "strongman": "\u{1F3CB}", "bodybuilding": "\u{1F3CB}", "competitive eating": "\u{1F32D}", "climber": "\u{1F9D7}", "sports": "\u{1F3C6}" };
+  function csBall(c) { return CS_SPORT[String(c && c.source || "").toLowerCase()] || "\u{1F3C6}"; }
+  const CS_TV = new Set(["tv", "media", "children's tv", "game shows", "youtuber", "streamer", "broadcaster", "lifestyle", "television painter", "puppeteer", "chef", "internet"]);
+  const CS_EXPLORE = new Set(["explorer", "explorers", "astronaut", "cosmonaut", "mountaineer", "aviator", "aviation", "daredevil", "survivalist", "wildlife", "stuntman"]);
+  const CS_LAB = new Set(["scientist", "physicist", "mathematician", "chemist", "astronomer", "astrophysicist", "inventor", "physician", "technology", "computer scientist", "engineer", "botanist", "naturalist", "primatologist", "psychologist", "science communicator", "nurse"]);
+  const CS_FLAG_IDS = { "barack-obama": "us", "bernie-sanders": "us", "bill-clinton": "us", "donald-trump": "us", "hillary-clinton": "us", "joe-biden": "us", "john-f-kennedy": "us", "richard-nixon": "us",
+    "ronald-reagan": "us", "martin-luther-king-jr": "us", "rosa-parks": "us", "malcolm-x": "us", "ruth-bader-ginsburg": "us", "angela-merkel": "de", "justin-trudeau": "ca", "kim-jong-un": "kp",
+    "vladimir-putin": "ru", "volodymyr-zelenskyy": "ua", "winston-churchill": "uk", "margaret-thatcher": "uk", "king-charles-iii": "uk", "queen-elizabeth-ii": "uk", "princess-diana": "uk",
+    "charles-de-gaulle": "fr", "nelson-mandela": "za", "joseph-stalin": "su", "mao-zedong": "cn", "fidel-castro": "cu", "che-guevara": "cu", "pol-pot": "kh", "idi-amin": "ug",
+    "saddam-hussein": "iq", "muammar-gaddafi": "ly", "malala-yousafzai": "pk", "greta-thunberg": "se", "mahatma-gandhi": "in", "benito-mussolini": "it",
+    "theodore-roosevelt": "us", "franklin-d-roosevelt": "us", "harriet-tubman": "us", "susan-b-anthony": "us", "emiliano-zapata": "mx", "pancho-villa": "mx", "queen-victoria": "uk" };
+  const CS_FLAG_SRC = { "united states": "us", "united kingdom": "uk", "germany": "de", "france": "fr", "russia": "ru", "soviet union": "su", "china": "cn", "cuba": "cu", "india": "in", "italy": "it",
+    "mexico": "mx", "japan": "jp", "south africa": "za", "cambodia": "kh", "uganda": "ug", "iraq": "iq", "libya": "ly" };
+  function csFlag(c) { return cardStyle(c) === "flag" ? (c.flag || CS_FLAG_IDS[c.id] || CS_FLAG_SRC[String(c.source || "").toLowerCase()] || "us") : ""; }
+  // characters who appear in many places get the style of where they started
+  const CS_ORIGIN = {
+    // myth, legend and folk/fairy tales first
+    "thor": "scroll", "loki": "scroll", "maui": "scroll", "mulan": "scroll", "aladdin": "scroll", "the-genie": "scroll", "snow-white": "scroll",
+    "cinderella": "scroll", "rapunzel": "scroll", "belle": "scroll", "puss-in-boots": "scroll",
+    // books first
+    "james-bond": "book", "hannibal-lecter": "book", "clarice-starling": "book", "vito-corleone": "book", "michael-corleone": "book",
+    "dorothy-gale": "book", "the-wicked-witch-of-the-west": "book", "mary-poppins": "book", "willy-wonka": "book", "frankenstein-s-monster": "book",
+    "forrest-gump": "book", "shrek": "book", "dumbo": "book", "jiminy-cricket": "book", "cruella-de-vil": "book", "jason-bourne": "book", "rambo": "book",
+    "norman-bates": "book", "jack-torrance": "book", "roy-batty": "book", "rick-deckard": "book", "pazuzu": "book", "r-j-macready": "book",
+    "mad-madam-mim": "book", "hiccup": "book", "toothless": "book", "howl": "book", "kiki": "book", "samara": "book", "ariel": "book", "lassie": "book",
+    "jon-snow": "book", "daenerys-targaryen": "book", "tyrion-lannister": "book", "arya-stark": "book", "bran-stark": "book", "cersei-lannister": "book",
+    "the-hound": "book", "the-mountain": "book", "hodor": "book", "brienne-of-tarth": "book", "dexter-morgan": "book", "geralt-of-rivia": "book",
+    "arthur": "book", "thomas-the-tank-engine": "book"
+  };
   function csDeathYear(c) {
+    const d = String(c.died || "").match(/^(\d{3,4})-/);
+    if (d) return Number(d[1]);
     const o = String(c.origin || "").trim();
     if (!o || /^born/i.test(o)) return null;
-    const parts = o.split(/\s[\u2013-]\s/);
-    const last = parts[parts.length - 1];
-    const m = last.match(/\d{3,4}/) || last.match(/\d+/);
-    if (/\bBC\b/.test(last)) return m ? -Number(m[0]) : -1000;
-    return m ? Number(m[0]) : -1000;
+    if (/\bBC\b/.test(o) && !/\bAD\b/.test(o)) return -1;
+    const big = o.match(/\d{3,4}/g), any = o.match(/\d+/g);
+    return big ? Number(big[big.length - 1]) : any ? Number(any[any.length - 1]) : -1000;
   }
   function cardStyle(c) {
     if (!c) return "";
     if (c.card_style) return c.card_style === "plain" ? "" : c.card_style;
     const cat = String(c.category || "").toLowerCase(), grp = String(c.group || c.filter || "").toLowerCase(), src = String(c.source || "").toLowerCase();
+    if (CS_ORIGIN[c.id]) return CS_ORIGIN[c.id];
     if (grp === "fiction") {
       if (/cartoon|anime|comic|manga/.test(cat)) return "toon";
       if (/literature|book|novel/.test(cat)) return "book";
       if (/myth|folk|legend|religio/.test(cat)) return "scroll";
-      if (/film|movie|^tv|television/.test(cat)) return "film";
+      if (/^tv|television/.test(cat)) return "tv";
+      if (/film|movie/.test(cat)) return "film";
+      if (/video ?game|gaming|game/.test(cat)) return "pixel";
       return "paint";
     }
+    // one rule for the long dead: sepia, whatever their job
+    if (grp === "history") { const y = csDeathYear(c); if (y !== null && y < 1900) return "sepia"; }
+    if (CS_SPORT[src] || /^sports?$/.test(cat)) return "sport";
     if (CS_STAR.has(src)) return "star";
     if (CS_AUTHOR.has(src) || CS_AUTHOR_IDS.has(c.id)) return "book";
-    if (grp === "history") { const y = csDeathYear(c); if (y !== null && y <= 1950) return "sepia"; }
+    if (CS_TV.has(src)) return "tv";
+    if (CS_FLAG_IDS[c.id] || src === "politics" || src === "activist" || src === "revolutionary") return "flag";
+    if (CS_EXPLORE.has(src)) return "map";
+    if (CS_LAB.has(src)) return "lab";
     return "paint";
   }
   function csTone(c) { let h = 0; for (const ch of String(c && c.id || "")) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % 6; }
@@ -700,11 +855,11 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     const src = c.image || imgCache[c.id];
     const img = src ? `<img src="${esc(src)}" alt="${esc(c.name)}" loading="lazy" onerror="this.remove()">` : "";
     return big
-      ? `<div class="art" style="background:${bg}"><span class="mono">${esc(initials(c.name))}</span>${img ? `<div style="position:absolute;inset:0">${img}</div>` : ""}${c.category ? `<span class="cat">${esc(c.category)}</span>` : ""}</div>`
+      ? `<div class="art" data-ball="${cardStyle(c) === "sport" ? csBall(c) : ""}" style="background:${bg}"><span class="mono">${esc(initials(c.name))}</span>${img ? `<div style="position:absolute;inset:0">${img}</div>` : ""}${c.category ? `<span class="cat">${esc(c.category)}</span>` : ""}</div>`
       : `<div class="thumb" data-cs="${cardStyle(c)}" style="background:${bg}">${img || esc(initials(c.name))}</div>`;
   }
   function charCard(c, extra = "") {
-    return `<article class="card enter" data-cs="${cardStyle(c)}" data-tone="${csTone(c)}">
+    return `<article class="card enter" data-cs="${cardStyle(c)}" data-tone="${csTone(c)}" data-flag="${csFlag(c)}">
       ${art(c, true)}
       <div class="body">
         <h3>${esc(c.name)}</h3>
@@ -1517,7 +1672,8 @@ window.Soundtrack = (() => {
   const parse = s => { const out = []; for (let i = 0; i < s.length; i++) { const ch = s[i]; if (ch === "." || ch === "-") continue; let len = 1; while (s[i + len] === "-") len++; out[i] = [tok(ch), len]; } out.length = s.length; return out; };
 
   // 10 basslines, one bar each (16 sixteenths)
-  const BASS = [
+  const RAW = {};
+  const BASS = RAW.bass = [
     "0-.0..0-..07.4..",
     "0..0..4..0..7.4.",
     "0-..7-.0--.4-.2.",
@@ -1528,9 +1684,10 @@ window.Soundtrack = (() => {
     "0-.4-.7-.4-.2-.b",
     "00..0.c.00..4.7.",
     "0--0--0-4--4--2-",
-  ].map(parse);
+  ];
+  const BASSP = BASS.map(parse);
   // 10 melodies, two bars each (32 sixteenths). Chord tones (0 2 4 7 9) land on the strong beats.
-  const MEL = [
+  const MEL = RAW.mel = [
     "4-.4.2-0..2-4---7-.7.4-2..4.2-0-",
     "..0.2.4-.4.2..0-..2.4.7-.7.9-7..",
     "7--4--2-.0.2-4..4--2--0-.b.0----",
@@ -1541,9 +1698,10 @@ window.Soundtrack = (() => {
     "0..4..7..4..2.4.7..4..2..4..0---",
     "9-7-4-7-9---.7..7-4-2-4-7---.4..",
     "..4-..4-..42.0-...7-..7-..74.2-.",
-  ].map(parse);
+  ];
+  const MELP = MEL.map(parse);
   // 10 harmonies: chord stabs/pads (rhythm + voicing) or arpeggio / counter-lines
-  const HARM = [
+  const HARM = RAW.harm = [
     { r: "x-.x..x-..x-.x..x-.x..x-..x-.x..", v: [2, 4, 7] },
     { r: "x---------------x---------------", v: [0, 2, 4], pad: 1 },
     { r: "..x...x...x...x...x...x...x...x.", v: [2, 4, 7] },
@@ -1554,7 +1712,8 @@ window.Soundtrack = (() => {
     { line: "7.4.2.4.7.4.2.4.9.7.4.7.9.7.4.2." },
     { line: "2---4---7---4---2---4---0-------" },
     { line: "..4.4.2...2.2.0...4.4.2...7-4-2-" },
-  ].map(h => (h.line ? { line: parse(h.line) } : { hits: parse(h.r.replace(/x/g, "0")), v: h.v, pad: h.pad }));
+  ];
+  const HARMP = HARM.map(h => (h.line ? { line: parse(h.line) } : { hits: parse(h.r.replace(/x/g, "0")), v: h.v, pad: h.pad }));
   // drums, two bars: k kick, s snare, g ghost snare, h hat, o open hat
   const KICK = "x.....x.x.....x.x.....x...x..x..";
   const SNARE = "....x.....g.x..g....x.......x.gg";
@@ -1563,7 +1722,8 @@ window.Soundtrack = (() => {
   let ctx = null, master = null, bus = null, delay = null, noiseBuf = null, timer = null;
   let muted = false, step = 0, nextTime = 0;
   let bass = 0, pendingBass = null, phrase = null, pendingPhrase = null;
-  let keyLevel = 0, playedKey = 0, crashAt = -1;
+  let keyLevel = 0, playedKey = 0, loop = false;
+  const parts = { drums: true, bass: true, mel: true, harm: true };
   try { muted = localStorage.getItem("cab-music") === "off"; } catch (e) {}
 
   function init() {
@@ -1658,21 +1818,25 @@ window.Soundtrack = (() => {
     }
     const root = center(PROG[Math.floor(n / 16) % 4]), shift = playedKey * 2, len = d => STEP * d * 0.95;
     // drums
-    if (KICK[s32] === "x") kick(t);
-    if (SNARE[s32] === "x") snare(t); else if (SNARE[s32] === "g") snare(t, true);
-    if (HAT[s32] !== ".") hat(t, HAT[s32] === "o", s16 % 4 === 2);
+    if (parts.drums) {
+      if (KICK[s32] === "x") kick(t);
+      if (SNARE[s32] === "x") snare(t); else if (SNARE[s32] === "g") snare(t, true);
+      if (HAT[s32] !== ".") hat(t, HAT[s32] === "o", s16 % 4 === 2);
+    }
     // bass
-    const b = BASS[bass][s16];
-    if (b) playBass(33 + 12 + shift + semis(root + b[0]), t, len(b[1]));
+    const b = BASSP[bass][s16];
+    if (b && parts.bass) playBass(33 + 12 + shift + semis(root + b[0]), t, len(b[1]));
     // melody + harmony phrase
     if (phrase) {
-      const i = n - phrase.start;
-      if (i >= 32) phrase = null;
+      let i = n - phrase.start;
+      if (i >= 32 && loop && s16 === 0) { phrase.start = n; i = 0; }
+      if (i >= 32) { if (!loop) phrase = null; }
       else {
-        const m = MEL[phrase.mel][i];
-        if (m) playLead(69 + shift + semis(root + m[0]), t, len(m[1]));
-        const h = HARM[phrase.harm];
-        if (h.line) { const x = h.line[i]; if (x) playPluck(57 + shift + semis(root + x[0]), t, len(x[1])); }
+        const m = MELP[phrase.mel][i];
+        if (m && parts.mel) playLead(69 + shift + semis(root + m[0]), t, len(m[1]));
+        const h = HARMP[phrase.harm];
+        if (!parts.harm) {}
+        else if (h.line) { const x = h.line[i]; if (x) playPluck(57 + shift + semis(root + x[0]), t, len(x[1])); }
         else { const x = h.hits[i]; if (x) playStab(h.v.map(v => 57 + shift + semis(root + v)), t, len(x[1]), h.pad); }
       }
     }
@@ -1762,8 +1926,23 @@ window.Soundtrack = (() => {
       if ((e.key === "m" || e.key === "M") && !e.ctrlKey && !e.metaKey && !e.altKey && !(e.target.matches && e.target.matches("input, select, textarea"))) setMuted(!muted);
     });
   }
-  if (document.body) mount(); else addEventListener("DOMContentLoaded", mount);
+  if (!window.SOUNDTRACK_NO_BUTTON) { if (document.body) mount(); else addEventListener("DOMContentLoaded", mount); }
 
-  return { observe, decision, setMuted, get muted() { return muted; }, _state: () => ({ bass, phrase, keyLevel, playedKey, step }) };
+  // sampler controls: pick any bassline / melody / harmony / key directly
+  function sample(o) {
+    if (o.loop != null) loop = !!o.loop;
+    if (o.parts) Object.assign(parts, o.parts);
+    if (o.key != null) keyLevel = o.key;
+    if (o.bass != null) pendingBass = o.bass;
+    if (o.mel != null || o.harm != null) {
+      const cur = pendingPhrase || phrase || { mel: 0, harm: 0 };
+      pendingPhrase = { mel: o.mel ?? cur.mel, harm: o.harm ?? cur.harm };
+    }
+  }
+  function start() { muted = false; init(); if (ctx) { ctx.resume(); master.gain.setValueAtTime(0.5, ctx.currentTime); nextTime = Math.max(nextTime, ctx.currentTime + 0.05); } }
+  function stop() { if (ctx) ctx.suspend(); muted = true; }
+
+  return { observe, decision, setMuted, sample, start, stop, patterns: RAW, BPM, get muted() { return muted; },
+    _state: () => ({ bass, phrase, pendingPhrase, keyLevel, playedKey, step, loop, parts: { ...parts } }) };
 })();
 </script>

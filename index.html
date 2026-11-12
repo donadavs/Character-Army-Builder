@@ -2242,7 +2242,7 @@ window.Soundtrack = (() => {
   let ctx = null, master = null, bus = null, delay = null, noiseBuf = null, timer = null;
   let muted = false, step = 0, nextTime = 0;
   let bass = 0, pendingBass = null, phrase = null, pendingPhrase = null;
-  let keyLevel = 0, playedKey = 0, loop = false, menu = !window.SOUNDTRACK_NO_BUTTON, harmRotate = true, lastMel = -1, lastHarm = -1;
+  let keyLevel = 0, playedKey = 0, loop = false, menu = !window.SOUNDTRACK_NO_BUTTON, sustain = false, harmRotate = true, lastMel = -1, lastHarm = -1;
   const parts = { drums: true, bass: true, mel: true, harm: true };
   // per-player mix (0..1), saved in this browser only
   const mix = { master: 0.8, drums: 0.8, bass: 0.8, mel: 0.8, harm: 0.8 };
@@ -2340,6 +2340,7 @@ window.Soundtrack = (() => {
     const s16 = n % 16, s32 = n % 32;
     if (s16 === 0 && playedKey !== keyLevel) { playedKey = keyLevel; crash(t); }
     if (menu && s32 === 0) { newBass(); newPhrase(); }   // main menu: everything plays, reshuffled every two bars
+    if (sustain && s16 === 0 && !phrase && !pendingPhrase) newPhrase(true);   // after the challenge reveal: never let it go quiet
     if (s16 % 4 === 0) {
       if (pendingBass != null) { bass = pendingBass; pendingBass = null; }
       if (pendingPhrase) { phrase = { ...pendingPhrase, start: n }; pendingPhrase = null; lastMel = phrase.mel; lastHarm = phrase.harm; }
@@ -2357,7 +2358,7 @@ window.Soundtrack = (() => {
     // melody + harmony phrase
     if (phrase) {
       let i = n - phrase.start;
-      if (i >= 32 && phrase.hold) { phrase.start = n; i = 0; phrase.mel = lastMel = other(phrase.mel, MEL.length); phrase.harm = lastHarm = nextHarm(phrase.harm); }
+      if (i >= 32 && (phrase.hold || sustain)) { phrase.start = n; i = 0; phrase.mel = lastMel = other(phrase.mel, MEL.length); phrase.harm = lastHarm = nextHarm(phrase.harm); }
       if (i >= 32 && loop && s16 === 0) { phrase.start = n; i = 0; }
       if (i >= 32) { if (!loop) phrase = null; }
       else {
@@ -2413,6 +2414,7 @@ window.Soundtrack = (() => {
     };
     keyLevel = levelFor(S, keyLevel);
     const wasMenu = menu; menu = S.phase === "setup";
+    sustain = S.phase === "challenge";          // melody + harmony keep playing after the challenge is revealed
     if (wasMenu && !menu) cut();                // leaving the main menu stops its melody right away
     const p = prev; prev = now;
     if (!p) { playedKey = keyLevel; return; }
@@ -2425,7 +2427,7 @@ window.Soundtrack = (() => {
     const bid = now.bid && now.bid !== p.bid && (now.amt > p.amt || now.lot !== p.lot);
     if (newDraft) cut();
     if (newDraft || event) newBass();
-    if (newDraft || event || bid) newPhrase();          // SOLD and passed trigger nothing
+    if (newDraft || event || bid) newPhrase(sustain);   // SOLD and passed trigger nothing
     // (harmony changes on every other one of these, see nextHarm)
   }
 

@@ -232,6 +232,15 @@ canvas.fx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-even
 
 @media (prefers-reduced-motion: reduce) { .card.enter, .stamp span { animation: none; } }
 
+/* ---- auction polish (polish.py) ---- */
+html, body { margin: 0; min-height: 0; overscroll-behavior-y: none; }
+body { min-height: 100vh; min-height: 100dvh; }
+.wrap { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+html .musicbtn { left: calc(12px + env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+html .musicpanel { max-height: calc(100vh - 82px); max-height: calc(100dvh - 82px - env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain; }
+.highbid .amtrow { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 16px; row-gap: 4px; min-width: 0; }
+.highbid .amt.amtwho { overflow-wrap: anywhere; min-width: 0; }
+/* ---- end auction polish ---- */
 /* ---- menu themes (menutheme.py) ---- */
 #mtfx, #mttop { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
 #mtfx { z-index: 0; } #mttop { z-index: 40; }
@@ -997,6 +1006,173 @@ html[data-mtheme="paint"] .btn:hover:not(:disabled) { transform: rotate(-1.5deg)
   if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
 })();
 </script>
+<script>
+// ---------- sound effects + auction polish (sfx.js, applied by polish.py) ----------
+// Crowd cheer on every bid, "cha-ching" when a card is sold, a big cheer when the vote picks a winner,
+// a rowdy crowd when the vote ties. All sounds are made with Web Audio, no audio files.
+// Also scrolls the page to the top when a match begins.
+// The effects follow the music on/off switch and the mixer's master volume.
+window.Sfx = (() => {
+  let ctx = null, out = null, noise = null;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const muted = () => {
+    if (window.Soundtrack && "muted" in window.Soundtrack) return window.Soundtrack.muted;
+    try { return localStorage.getItem("cab-music") === "off"; } catch (e) { return false; }
+  };
+  const vol = () => { const m = window.Soundtrack && window.Soundtrack.mix; return m && typeof m.master === "number" ? Math.pow(m.master, 1.6) : 0.8; };
+  function init() {
+    if (ctx || !AC) return ctx;
+    ctx = new AC();
+    out = ctx.createGain(); out.gain.value = 0.9;
+    const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 6;
+    out.connect(comp); comp.connect(ctx.destination);
+    // two seconds of pinkish noise, shared by every sound
+    const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0;
+    for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; b0 = 0.997 * b0 + 0.029 * w; b1 = 0.985 * b1 + 0.032 * w; b2 = 0.95 * b2 + 0.048 * w; d[i] = (b0 + b1 + b2 + w * 0.12) * 0.9; }
+    noise = buf;
+    return ctx;
+  }
+  // unlock audio on the first tap or key press (browsers block sound until then)
+  const unlock = () => { init(); if (ctx && ctx.state === "suspended") ctx.resume(); };
+  ["pointerdown", "keydown", "touchstart"].forEach(ev => window.addEventListener(ev, unlock, { capture: true, passive: true }));
+  function ready() {
+    if (muted() || !init()) return false;
+    if (ctx.state === "suspended") ctx.resume();
+    out.gain.setValueAtTime(0.9 * vol(), ctx.currentTime);
+    return ctx.state !== "closed";
+  }
+  const R = (a, b) => a + Math.random() * (b - a);
+  function env(g, t, a, peak, dur) {
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(peak, t + a);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  }
+  function noiseSrc(t, dur) {
+    const s = ctx.createBufferSource(); s.buffer = noise; s.loop = true;
+    s.start(t, Math.random() * 1.5); s.stop(t + dur + 0.05); return s;
+  }
+  // crowd roar: band-passed noise swelling in and out
+  function roar(t, dur, peak, freq = 900) {
+    const s = noiseSrc(t, dur), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    f.type = "bandpass"; f.frequency.value = freq; f.Q.value = 0.6;
+    env(g, t, Math.min(0.25, dur * 0.2), peak, dur);
+    s.connect(f); f.connect(g); g.connect(out);
+  }
+  // one voice in the crowd: "woo!" (rising) or "ohh" (falling), a buzzy tone through two vowel formants
+  function voice(t, dur, peak, from, to) {
+    const o = ctx.createOscillator(), lfo = ctx.createOscillator(), lg = ctx.createGain(), g = ctx.createGain();
+    o.type = "sawtooth"; o.frequency.setValueAtTime(from, t); o.frequency.exponentialRampToValueAtTime(to, t + dur * 0.7);
+    lfo.frequency.value = R(5, 7.5); lg.gain.value = from * 0.03; lfo.connect(lg); lg.connect(o.frequency);
+    const mix = ctx.createGain(); mix.gain.value = 1;
+    [[R(700, 900), 6], [R(1100, 1400), 8]].forEach(([fq, q]) => { const f = ctx.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = fq; f.Q.value = q; o.connect(f); f.connect(mix); });
+    env(g, t, dur * 0.25, peak, dur);
+    mix.connect(g); g.connect(out);
+    o.start(t); lfo.start(t); o.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05);
+  }
+  function clap(t, peak) {
+    const s = noiseSrc(t, 0.06), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    f.type = "bandpass"; f.frequency.value = R(1200, 2200); f.Q.value = 1.2;
+    g.gain.setValueAtTime(peak, t); g.gain.exponentialRampToValueAtTime(0.0001, t + R(0.03, 0.06));
+    s.connect(f); f.connect(g); g.connect(out);
+  }
+  function whistle(t, dur, peak) {
+    const o = ctx.createOscillator(), g = ctx.createGain(), f0 = R(1800, 2600);
+    o.type = "sine"; o.frequency.setValueAtTime(f0, t);
+    o.frequency.linearRampToValueAtTime(f0 * R(1.15, 1.35), t + dur * 0.4); o.frequency.linearRampToValueAtTime(f0 * R(0.8, 1), t + dur);
+    env(g, t, 0.03, peak, dur); o.connect(g); g.connect(out); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function stomp(t, peak) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.15);
+    g.gain.setValueAtTime(peak, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+    o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.25);
+  }
+  function crowd(size, dur, loud) {
+    const t = ctx.currentTime + 0.02;
+    roar(t, dur, 0.35 * loud);
+    for (let i = 0; i < size; i++) { const st = t + R(0, dur * 0.35), d = R(0.35, Math.min(1.1, dur * 0.7)), f = R(220, 520); voice(st, d, R(0.05, 0.11) * loud, f, f * R(1.2, 1.6)); }
+    for (let i = 0; i < size * 2; i++) clap(t + R(0.05, dur * 0.85), R(0.15, 0.35) * loud);
+  }
+
+  // a little cheer when a bid is placed
+  let lastCheer = 0;
+  function cheer() {
+    if (!ready()) return;
+    const now = ctx.currentTime, quick = now - lastCheer < 0.6; lastCheer = now;
+    crowd(quick ? 3 : 6, quick ? 0.8 : 1.3, quick ? 0.6 : 0.9);
+  }
+  // a big cheer when the vote picks a winner
+  function bigCheer() {
+    if (!ready()) return;
+    const t = ctx.currentTime + 0.02;
+    crowd(18, 3.4, 1.4);
+    roar(t + 0.2, 3, 0.25, 1500);
+    for (let i = 0; i < 4; i++) whistle(t + R(0.2, 2), R(0.4, 0.8), 0.06);
+  }
+  // a rowdy, raucous crowd when the vote is a tie: cheers, groans, whistles and stomping all at once
+  function rowdy() {
+    if (!ready()) return;
+    const t = ctx.currentTime + 0.02, dur = 3.6;
+    roar(t, dur, 0.45, 650);
+    roar(t + 0.3, dur - 0.3, 0.3, 1600);
+    for (let i = 0; i < 16; i++) { const st = t + R(0, dur * 0.6), d = R(0.4, 1.2), f = R(150, 420), up = Math.random() < 0.5; voice(st, d, R(0.06, 0.12), f, up ? f * R(1.3, 1.7) : f * R(0.55, 0.75)); }
+    for (let i = 0; i < 7; i++) whistle(t + R(0, dur * 0.8), R(0.3, 0.7), 0.07);
+    for (let i = 0; i < 10; i++) stomp(t + 0.15 + i * 0.33 + R(-0.02, 0.02), 0.5);
+    for (let i = 0; i < 30; i++) clap(t + R(0, dur * 0.9), R(0.15, 0.35));
+  }
+  // "cha-ching": a cash drawer clunk, then a bright bell
+  function chaching() {
+    if (!ready()) return;
+    const t = ctx.currentTime + 0.02;
+    [0, 0.07].forEach((dt, i) => {
+      const s = noiseSrc(t + dt, 0.1), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      f.type = "bandpass"; f.frequency.value = i ? 2600 : 1400; f.Q.value = 2;
+      g.gain.setValueAtTime(0.7, t + dt); g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.08);
+      s.connect(f); f.connect(g); g.connect(out);
+      const o = ctx.createOscillator(), og = ctx.createGain(); o.type = "square"; o.frequency.value = i ? 180 : 120;
+      og.gain.setValueAtTime(0.12, t + dt); og.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.05);
+      o.connect(og); og.connect(out); o.start(t + dt); o.stop(t + dt + 0.07);
+    });
+    const tb = t + 0.17;
+    [[2637, 0.22, 1.3], [3951, 0.14, 1.0], [5274, 0.1, 0.8], [7040, 0.05, 0.5], [2650, 0.12, 1.4]].forEach(([fq, a, d]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain(); o.type = "sine"; o.frequency.value = fq;
+      g.gain.setValueAtTime(0.0001, tb); g.gain.linearRampToValueAtTime(a, tb + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, tb + d);
+      o.connect(g); g.connect(out); o.start(tb); o.stop(tb + d + 0.05);
+    });
+  }
+
+  // watch the game state after every render
+  let prev = null;
+  function observe(S, flash) {
+    if (!S) return;
+    const v = S.vote || {};
+    const now = {
+      phase: S.phase, lot: S.lotIndex, lots: (S.lots || []).length,
+      bid: S.bid ? S.bid.bidder + ":" + S.bid.amount : "", amt: S.bid ? S.bid.amount : 0,
+      sold: flash && flash.text === "SOLD" ? flash.id + ":" + flash.bidder : "",
+      winner: S.winner === undefined ? "u" : String(S.winner),
+      tie: v.stage === "done" && v.result && v.result.tied && v.result.tied.length > 1,
+      chal: S.challenge ? S.challenge.id + ":" + S.round : "",
+    };
+    const p = prev; prev = now;
+    if (!p) return;
+    // a match begins: back to the top of the page
+    if (now.phase === "auction" && p.phase === "setup") {
+      try { window.scrollTo({ top: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); }
+    }
+    if (now.phase === "auction" && p.phase === "auction") {
+      if (now.sold && now.sold !== p.sold) chaching();
+      else if (now.bid && now.bid !== p.bid && now.lot === p.lot && now.amt > p.amt) cheer();
+    }
+    if (now.phase === "challenge" && now.chal === p.chal && p.winner === "u" && now.winner !== "u") {
+      if (now.winner !== "null") bigCheer();
+      else if (now.tie) rowdy();
+    }
+  }
+  return { observe, cheer, bigCheer, rowdy, chaching };
+})();
+</script>
 
 <script>
 /* Auto-built: all challenge data in one file so the game works from file:// without fetch(). */
@@ -1498,8 +1674,8 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
         <div class="bidbox">
           ${timerHtml()}
           <div class="highbid">
-            <div><div class="eyebrow">${leader ? "High bid" : "Opening bid"}</div><div class="amt money">$${cur || 0}</div></div>
-            <div class="who" style="color:${leader ? leader.color : "var(--text-soft)"}">${leader ? esc(leader.name) : "No bids yet"}</div>
+            <div><div class="eyebrow">${leader ? "High bid" : "Opening bid"}</div><div class="amtrow"><div class="amt money">$${cur || 0}</div>${leader ? `<div class="amt money amtwho" style="color:${leader.color}">${esc(leader.name)}</div>` : ""}</div></div>
+            ${leader ? "" : `<div class="who" style="color:var(--text-soft)">No bids yet</div>`}
           </div>
           ${S.live === false ? readyView() : ""}<div class="paddles">${paddles}</div>
           <div class="gavelrow">
@@ -1553,6 +1729,7 @@ window.CHALLENGE_DATA = {"curated": {"version": 1, "difficulty_scale": {"1": "Ev
     app.innerHTML = S.phase === "setup" ? setupView() : S.phase === "auction" ? auctionView() : S.phase === "teams" ? teamsPage() : challengeView();
     NET.afterRender();
     window.MenuTheme && window.MenuTheme.observe(S);
+    window.Sfx && window.Sfx.observe(S, flash);
     celebrate(); tick();
     window.Soundtrack && window.Soundtrack.observe(S, flash);
     if (focusId) { const el = document.getElementById(focusId); if (el) { el.focus(); try { if (sel != null) el.setSelectionRange(sel, sel); } catch (e) {} } }
